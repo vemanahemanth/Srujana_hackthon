@@ -67,7 +67,6 @@ Security is implemented through multiple layers:
 
 ## Development and Deployment
 - **python-dotenv**: Environment variable management for configuration
-- **Replit**: Primary deployment platform with easy setup process
 - **SQLite**: Embedded database requiring no additional setup
 
 The system is designed to work out-of-the-box with minimal configuration, automatically falling back to local alternatives when external services are unavailable.
