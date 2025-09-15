@@ -1,0 +1,1231 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - ACTMS{% endblock %}
+{% block nav_chat %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="chat-page-header section">
+        <div class="header-content text-center">
+            <h1 class="text-primary mb-sm">ACTMS AI Assistant</h1>
+            <p class="text-secondary">Get instant help with tender management, bid submission, and fraud detection</p>
+        </div>
+    </div>
+
+    <div class="chat-layout">
+        <!-- Chat Interface -->
+        <div class="chat-main glass-card">
+            <div class="chat-header">
+                <div class="assistant-info">
+                    <div class="assistant-avatar">
+                        {% from 'partials/icons.html' import icon %}
+                        {{ icon('robot', 'lg', 'glass') }}
+                        <div class="status-indicator online"></div>
+                    </div>
+                    <div class="assistant-details">
+                        <div class="assistant-name text-primary">ACTMS Assistant</div>
+                        <div class="assistant-status text-secondary">Online • Ready to help</div>
+                    </div>
+                </div>
+                
+                <div class="chat-controls">
+                    <button class="btn btn-secondary" onclick="exportChatHistory()" title="Export Chat">
+                        {{ icon('download', 'sm', 'glass') }} Export
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearChatHistory()" title="Clear Chat">
+                        {{ icon('trash', 'sm', 'glass') }} Clear
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="message assistant-message fade-in">
+                    <div class="message-avatar">{{ icon('robot', 'md', 'glass') }}</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <p>Hello! I'm your ACTMS AI Assistant. I can help you with:</p>
+                            <ul>
+                                <li>Understanding tender requirements</li>
+                                <li>Bid submission guidance</li>
+                                <li>Fraud detection insights</li>
+                                <li>System navigation and features</li>
+                                <li>Compliance and best practices</li>
+                            </ul>
+                            <p>How can I assist you today?</p>
+                        </div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="quick-actions" id="quick-actions">
+                <div class="quick-actions-header">
+                    <span class="text-secondary">Quick Actions:</span>
+                </div>
+                <div class="quick-actions-buttons">
+                    <button class="quick-action-btn" onclick="sendQuickMessage('How do I submit a bid?')">
+                        {{ icon('edit', 'sm', 'glass') }} Submit a Bid
+                    </button>
+                    <button class="quick-action-btn" onclick="sendQuickMessage('Explain fraud detection features')">
+                        🔍 Fraud Detection
+                    </button>
+                    <button class="quick-action-btn" onclick="sendQuickMessage('Show me tender requirements')">
+                        📋 Tender Requirements
+                    </button>
+                    <button class="quick-action-btn" onclick="sendQuickMessage('Help with dashboard navigation')">
+                        🧭 Navigation Help
+                    </button>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <div class="typing-indicator" id="typing-indicator" style="display: none;">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="typing-text">Assistant is typing...</span>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="input-wrapper">
+                        <textarea class="chat-input" 
+                                id="chat-input" 
+                                placeholder="Type your message here..." 
+                                rows="1"
+                                onkeydown="handleChatKeyDown(event)"
+                                oninput="adjustTextareaHeight(this)"></textarea>
+                        
+                        <div class="input-actions">
+                            <button class="action-btn" onclick="attachFile()" title="Attach File">
+                                {% from 'partials/icons.html' import icon %}
+                                {{ icon('paperclip', 'sm', 'glass') }}
+                            </button>
+                            <button class="action-btn" onclick="toggleVoiceInput()" title="Voice Input" id="voice-btn">
+                                {{ icon('microphone', 'sm', 'glass') }}
+                            </button>
+                            <button class="send-btn" onclick="sendMessage()" id="send-btn" disabled>
+                                {{ icon('send', 'sm', 'glass') }}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-suggestions" id="input-suggestions" style="display: none;">
+                        <!-- Suggestions will be populated here -->
+                    </div>
+                </div>
+
+                <div class="chat-footer">
+                    <div class="footer-info text-secondary">
+                        <span>💡 Press Enter to send, Shift+Enter for new line</span>
+                        <span class="separator">•</span>
+                        <span>AI responses may take a few seconds</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Sidebar -->
+        <div class="chat-sidebar glass-card">
+            <div class="sidebar-section">
+                <h3 class="text-primary mb-md">Knowledge Base</h3>
+                
+                <div class="knowledge-topics">
+                    <div class="topic-item" onclick="sendQuickMessage('Tell me about tender submission process')">
+                        {{ icon('file', 'md', 'glass') }}
+                        <div class="topic-content">
+                            <div class="topic-title">Tender Submission</div>
+                            <div class="topic-desc">Step-by-step guide</div>
+                        </div>
+                    </div>
+
+                    <div class="topic-item" onclick="sendQuickMessage('How does AI fraud detection work?')">
+                        {{ icon('robot', 'md', 'glass') }}
+                        <div class="topic-content">
+                            <div class="topic-title">AI Fraud Detection</div>
+                            <div class="topic-desc">Understanding our AI</div>
+                        </div>
+                    </div>
+
+                    <div class="topic-item" onclick="sendQuickMessage('What are compliance requirements?')">
+                        {{ icon('shield', 'md', 'glass') }}
+                        <div class="topic-content">
+                            <div class="topic-title">Compliance</div>
+                            <div class="topic-desc">Rules and regulations</div>
+                        </div>
+                    </div>
+
+                    <div class="topic-item" onclick="sendQuickMessage('Show me dashboard features')">
+                        <div class="topic-icon">📊</div>
+                        <div class="topic-content">
+                            <div class="topic-title">Dashboard Guide</div>
+                            <div class="topic-desc">Platform overview</div>
+                        </div>
+                    </div>
+
+                    <div class="topic-item" onclick="sendQuickMessage('Help with bid evaluation criteria')">
+                        <div class="topic-icon">📋</div>
+                        <div class="topic-content">
+                            <div class="topic-title">Evaluation Criteria</div>
+                            <div class="topic-desc">Scoring guidelines</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="text-primary mb-md">Recent Chats</h3>
+                
+                <div class="recent-chats" id="recent-chats">
+                    <div class="recent-chat-item">
+                        <div class="chat-preview">
+                            <div class="chat-title">Bid submission help</div>
+                            <div class="chat-snippet">How do I submit a bid for...</div>
+                            <div class="chat-time">2 hours ago</div>
+                        </div>
+                    </div>
+
+                    <div class="recent-chat-item">
+                        <div class="chat-preview">
+                            <div class="chat-title">Dashboard navigation</div>
+                            <div class="chat-snippet">Can you explain the dashboard...</div>
+                            <div class="chat-time">Yesterday</div>
+                        </div>
+                    </div>
+
+                    <div class="recent-chat-item">
+                        <div class="chat-preview">
+                            <div class="chat-title">Fraud detection query</div>
+                            <div class="chat-snippet">What triggers fraud alerts...</div>
+                            <div class="chat-time">2 days ago</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary w-full mt-md" onclick="viewAllChats()">
+                    View All Chats
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="text-primary mb-md">Quick Stats</h3>
+                
+                <div class="chat-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="total-questions">47</div>
+                        <div class="stat-label">Questions Asked</div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-value" id="avg-response-time">1.2s</div>
+                        <div class="stat-label">Avg Response Time</div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="stat-value" id="satisfaction-rate">98%</div>
+                        <div class="stat-label">Satisfaction Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Chat Page Styles */
+.chat-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+    height: calc(100vh - 200px);
+    min-height: 600px;
+}
+
+.chat-main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+    overflow: hidden;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+}
+
+.assistant-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.assistant-avatar {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: var(--glass-fill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.status-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--color-bg-start);
+}
+
+.status-indicator.online {
+    background: #00FF00;
+    animation: pulse 2s infinite;
+}
+
+.assistant-name {
+    font-weight: var(--font-weight-semibold);
+    font-size: 1.1rem;
+}
+
+.assistant-status {
+    font-size: 0.875rem;
+}
+
+.chat-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-controls .btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message {
+    display: flex;
+    gap: 1rem;
+    max-width: 85%;
+    animation: messageSlideIn 0.3s ease;
+}
+
+.message.user-message {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message.assistant-message {
+    align-self: flex-start;
+}
+
+@keyframes messageSlideIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.message-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass-fill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.user-message .message-avatar {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+}
+
+.message-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-text {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    position: relative;
+}
+
+.user-message .message-text {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+    border-color: var(--color-text-primary);
+}
+
+.message-text::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.assistant-message .message-text::before {
+    top: 15px;
+    left: -8px;
+    border-color: transparent var(--glass-border) transparent transparent;
+    border-width: 8px 8px 8px 0;
+}
+
+.user-message .message-text::before {
+    top: 15px;
+    right: -8px;
+    border-color: transparent transparent transparent var(--color-text-primary);
+    border-width: 8px 0 8px 8px;
+}
+
+.message-text ul {
+    margin: 0.5rem 0;
+    padding-left: 1.25rem;
+}
+
+.message-text li {
+    margin-bottom: 0.25rem;
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-top: 0.5rem;
+    opacity: 0.7;
+}
+
+.user-message .message-time {
+    text-align: right;
+}
+
+.quick-actions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+}
+
+.quick-actions-header {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.quick-actions-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.quick-action-btn {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    color: var(--color-text-secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    white-space: nowrap;
+}
+
+.quick-action-btn:hover {
+    background: var(--glass-hover);
+    color: var(--color-text-primary);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--glass-hover);
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.typing-dots span {
+    width: 4px;
+    height: 4px;
+    background: var(--color-text-secondary);
+    border-radius: 50%;
+    animation: typingBounce 1.4s infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingBounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+}
+
+.chat-input-area {
+    border-top: 1px solid var(--glass-border);
+    background: var(--glass-hover);
+}
+
+.chat-input-container {
+    padding: 1.5rem;
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 1rem 1.25rem;
+    transition: all var(--transition-base);
+}
+
+.input-wrapper:focus-within {
+    border-color: rgba(255,255,255,0.3);
+    background: var(--glass-hover);
+}
+
+.chat-input {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.chat-input::placeholder {
+    color: var(--color-text-secondary);
+}
+
+.input-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.action-btn,
+.send-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.action-btn:hover {
+    color: var(--color-text-primary);
+    background: rgba(255,255,255,0.1);
+}
+
+.send-btn {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+}
+
+.send-btn:disabled {
+    background: var(--glass-border);
+    color: var(--color-text-secondary);
+    cursor: not-allowed;
+}
+
+.send-btn:not(:disabled):hover {
+    background: rgba(255,255,255,0.9);
+}
+
+.chat-footer {
+    padding: 0 1.5rem 1rem;
+}
+
+.footer-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    justify-content: center;
+}
+
+.separator {
+    opacity: 0.5;
+}
+
+/* Sidebar Styles */
+.chat-sidebar {
+    height: 100%;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sidebar-section h3 {
+    font-size: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 0.5rem;
+}
+
+.knowledge-topics {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.topic-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.topic-item:hover {
+    background: var(--glass-hover);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.topic-icon {
+    font-size: 1.25rem;
+    width: 32px;
+    text-align: center;
+}
+
+.topic-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.topic-title {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.topic-desc {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+}
+
+.recent-chats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.recent-chat-item {
+    padding: 0.75rem;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.recent-chat-item:hover {
+    background: var(--glass-hover);
+}
+
+.chat-title {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.chat-snippet {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-time {
+    color: var(--color-text-secondary);
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+.chat-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+}
+
+.stat-value {
+    color: var(--color-text-primary);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 1024px) {
+    .chat-layout {
+        grid-template-columns: 1fr 250px;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .chat-layout {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 150px);
+    }
+    
+    .chat-sidebar {
+        display: none;
+    }
+    
+    .chat-main {
+        height: 100%;
+    }
+    
+    .chat-header {
+        padding: 1rem;
+    }
+    
+    .assistant-info {
+        gap: 0.75rem;
+    }
+    
+    .assistant-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .chat-messages {
+        padding: 1rem;
+    }
+    
+    .message {
+        max-width: 95%;
+    }
+    
+    .quick-actions-buttons {
+        justify-content: center;
+    }
+    
+    .chat-input-container {
+        padding: 1rem;
+    }
+    
+    .footer-info {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+    }
+    
+    .separator {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-layout {
+        height: calc(100vh - 120px);
+        min-height: 500px;
+    }
+    
+    .assistant-details {
+        display: none;
+    }
+    
+    .chat-controls .btn {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .quick-actions {
+        padding: 1rem;
+    }
+    
+    .quick-actions-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .quick-action-btn {
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let chatHistory = [];
+let isTyping = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeChat();
+    
+    // Enable send button when user types
+    document.getElementById('chat-input').addEventListener('input', function() {
+        const sendBtn = document.getElementById('send-btn');
+        sendBtn.disabled = !this.value.trim();
+    });
+});
+
+function initializeChat() {
+    // Load any existing chat history
+    loadChatHistory();
+    
+    // Focus on input
+    document.getElementById('chat-input').focus();
+    
+    // Hide quick actions after first message
+    showQuickActions(true);
+}
+
+function handleChatKeyDown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+
+function adjustTextareaHeight(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const message = input.value.trim();
+    
+    if (!message || isTyping) return;
+    
+    // Add user message
+    addMessage(message, 'user');
+    
+    // Clear input
+    input.value = '';
+    input.style.height = 'auto';
+    document.getElementById('send-btn').disabled = true;
+    
+    // Hide quick actions after first user message
+    showQuickActions(false);
+    
+    // Show typing indicator and get AI response
+    showTypingIndicator();
+    
+    // Simulate API call to get response
+    setTimeout(() => {
+        getAIResponse(message);
+    }, Math.random() * 2000 + 1000); // 1-3 seconds delay
+}
+
+function sendQuickMessage(message) {
+    document.getElementById('chat-input').value = message;
+    sendMessage();
+}
+
+function addMessage(text, sender = 'assistant', timestamp = new Date()) {
+    const messagesContainer = document.getElementById('chat-messages');
+    const messageElement = document.createElement('div');
+    
+    messageElement.className = `message ${sender}-message fade-in`;
+    
+    const avatarIcon = sender === 'user' ? '👤' : '🤖';
+    
+    messageElement.innerHTML = `
+        <div class="message-avatar">${avatarIcon}</div>
+        <div class="message-content">
+            <div class="message-text">
+                ${formatMessageText(text)}
+            </div>
+            <div class="message-time">${formatTime(timestamp)}</div>
+        </div>
+    `;
+    
+    messagesContainer.appendChild(messageElement);
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    
+    // Save to history
+    chatHistory.push({
+        text,
+        sender,
+        timestamp
+    });
+    
+    // Update stats
+    updateChatStats();
+}
+
+function formatMessageText(text) {
+    // Convert line breaks to <br>
+    text = text.replace(/\n/g, '<br>');
+    
+    // Convert markdown-style lists
+    text = text.replace(/^\* (.+)$/gm, '<li>$1</li>');
+    text = text.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+    
+    // Convert **bold** to <strong>
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert *italic* to <em>
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    
+    return text;
+}
+
+function formatTime(timestamp) {
+    const now = new Date();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes === 1) return '1 minute ago';
+    if (minutes < 60) return `${minutes} minutes ago`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours === 1) return '1 hour ago';
+    if (hours < 24) return `${hours} hours ago`;
+    
+    return timestamp.toLocaleString();
+}
+
+function showTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    indicator.style.display = 'flex';
+    isTyping = true;
+    
+    // Scroll to show typing indicator
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    const indicator = document.getElementById('typing-indicator');
+    indicator.style.display = 'none';
+    isTyping = false;
+}
+
+async function getAIResponse(userMessage) {
+    try {
+        const response = await actms.chatWithAssistant(userMessage);
+        
+        hideTypingIndicator();
+        
+        // Add AI response
+        if (response && response.response) {
+            addMessage(response.response, 'assistant');
+        } else {
+            // Fallback response
+            const fallbackResponse = generateFallbackResponse(userMessage);
+            addMessage(fallbackResponse, 'assistant');
+        }
+        
+    } catch (error) {
+        console.error('Failed to get AI response:', error);
+        hideTypingIndicator();
+        
+        // Generate contextual fallback response
+        const fallbackResponse = generateFallbackResponse(userMessage);
+        addMessage(fallbackResponse, 'assistant');
+    }
+}
+
+function generateFallbackResponse(userMessage) {
+    const message = userMessage.toLowerCase();
+    
+    // Context-aware responses based on keywords
+    if (message.includes('bid') || message.includes('submit')) {
+        return `To submit a bid, follow these steps:
+
+**1. Select Tender**: Navigate to the Bid Submission page and choose an active tender
+**2. Company Information**: Fill in your company details and registration information  
+**3. Bid Details**: Enter your proposed amount and timeline
+**4. Upload Documents**: Attach your technical proposal and supporting documents
+**5. Review & Submit**: Verify all information and digitally sign your submission
+
+The system uses AI to analyze your bid for completeness and flag any potential issues. You'll receive confirmation once successfully submitted.
+
+Would you like me to explain any specific step in more detail?`;
+    }
+    
+    if (message.includes('fraud') || message.includes('detect')) {
+        return `Our AI fraud detection system works by:
+
+**Advanced Analytics**: Analyzing bidding patterns, pricing anomalies, and document similarities
+**Real-time Monitoring**: Continuous scanning for suspicious activities and unusual behaviors
+**Machine Learning**: Using trained models to identify potential fraud indicators
+**Risk Scoring**: Assigning anomaly scores to bids based on various risk factors
+
+**Key Features:**
+* Pattern recognition for bid collusion
+* Price deviation analysis
+* Document authenticity verification
+* Company network analysis
+* Temporal pattern detection
+
+The system achieves 99.2% accuracy and provides detailed explanations for all flagged items.`;
+    }
+    
+    if (message.includes('dashboard') || message.includes('navigate')) {
+        return `The ACTMS dashboard is organized into five main sections:
+
+**Overview**: Key metrics, alerts, and recent activity
+**Financial**: Budget analysis, tender values, and cost insights  
+**Security**: Risk assessments, anomaly detection, and threat monitoring
+**Operational**: Processing statistics, performance metrics, and system health
+**Admin**: User management, system configuration, and audit logs
+
+**Navigation Tips:**
+* Use the tab interface to switch between sections
+* Interactive charts provide drill-down capabilities
+* Real-time updates keep data current
+* Export functions available for reporting
+
+Would you like me to explain any specific dashboard section?`;
+    }
+    
+    if (message.includes('tender') || message.includes('requirement')) {
+        return `Tender requirements typically include:
+
+**Documentation:**
+* Complete technical proposal
+* Company registration certificates
+* Financial statements (last 2 years)
+* Previous project portfolio
+* Compliance certifications
+
+**Submission Criteria:**
+* Bid amount within specified range
+* Meeting minimum qualification requirements
+* Timely submission before deadline
+* All mandatory documents provided
+* Digital signature authentication
+
+**Evaluation Factors:**
+* Technical capability (40%)
+* Financial proposal (35%)
+* Previous experience (15%)
+* Timeline feasibility (10%)
+
+Each tender may have specific requirements. Always review the complete tender document before submitting your bid.`;
+    }
+    
+    // Default helpful response
+    return `I'm here to help with ACTMS! I can assist you with:
+
+**Tender Management**: Submission processes, requirements, and evaluation criteria
+**Bid Guidance**: Step-by-step submission help and best practices  
+**Fraud Detection**: Understanding our AI systems and security features
+**Platform Navigation**: Dashboard features and system functionality
+**Compliance**: Rules, regulations, and best practices
+
+Please let me know what specific topic you'd like help with, or ask me a more detailed question about any ACTMS feature.`;
+}
+
+function showQuickActions(show) {
+    const quickActions = document.getElementById('quick-actions');
+    quickActions.style.display = show ? 'block' : 'none';
+}
+
+function loadChatHistory() {
+    // In a real implementation, this would load from localStorage or API
+    // For now, we'll start fresh each time
+}
+
+function updateChatStats() {
+    // Update question count
+    const questionCount = chatHistory.filter(msg => msg.sender === 'user').length;
+    document.getElementById('total-questions').textContent = questionCount + 47; // Add base count
+    
+    // Update other stats (simulated)
+    const responseTime = (Math.random() * 2 + 0.5).toFixed(1);
+    document.getElementById('avg-response-time').textContent = `${responseTime}s`;
+}
+
+// Chat Actions
+function exportChatHistory() {
+    const chatData = chatHistory.map(msg => ({
+        timestamp: msg.timestamp.toISOString(),
+        sender: msg.sender,
+        message: msg.text
+    }));
+    
+    const blob = new Blob([JSON.stringify(chatData, null, 2)], {
+        type: 'application/json'
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `actms_chat_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    actms.showToast('Chat history exported successfully', 'success');
+}
+
+function clearChatHistory() {
+    if (confirm('Are you sure you want to clear the chat history? This action cannot be undone.')) {
+        const messagesContainer = document.getElementById('chat-messages');
+        
+        // Keep only the welcome message
+        const welcomeMessage = messagesContainer.querySelector('.assistant-message');
+        messagesContainer.innerHTML = '';
+        messagesContainer.appendChild(welcomeMessage);
+        
+        // Clear history
+        chatHistory = [];
+        
+        // Show quick actions again
+        showQuickActions(true);
+        
+        // Update stats
+        updateChatStats();
+        
+        actms.showToast('Chat history cleared', 'info');
+    }
+}
+
+function attachFile() {
+    // Create file input
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // In a real implementation, you would upload the file
+            addMessage(`Attached: ${file.name} (${formatFileSize(file.size)})`, 'user');
+            
+            // Simulate AI response about the file
+            setTimeout(() => {
+                const response = `I see you've attached "${file.name}". I can help you with document-related questions or guide you through the upload process for tender submissions. What would you like to know about this file?`;
+                addMessage(response, 'assistant');
+            }, 1000);
+        }
+    });
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+    document.body.removeChild(fileInput);
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function toggleVoiceInput() {
+    const voiceBtn = document.getElementById('voice-btn');
+    
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        
+        recognition.onstart = function() {
+            voiceBtn.innerHTML = '<div class="status-dot recording"></div>';
+            voiceBtn.style.animation = 'pulse 1s infinite';
+        };
+        
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('chat-input').value = transcript;
+            document.getElementById('send-btn').disabled = false;
+        };
+        
+        recognition.onend = function() {
+            voiceBtn.innerHTML = '{{ icon("microphone", "sm", "glass") }}';
+            voiceBtn.style.animation = '';
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error:', event.error);
+            voiceBtn.innerHTML = '{{ icon("microphone", "sm", "glass") }}';
+            voiceBtn.style.animation = '';
+            actms.showToast('Voice input error. Please try again.', 'error');
+        };
+        
+        recognition.start();
+    } else {
+        actms.showToast('Voice input not supported in this browser', 'error');
+    }
+}
+
+function viewAllChats() {
+    actms.showToast('Chat history feature coming soon...', 'info');
+}
+</script>
+{% endblock %}

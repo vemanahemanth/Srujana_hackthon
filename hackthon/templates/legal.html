@@ -1,0 +1,547 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if page_type == 'privacy' %}Privacy Policy - ACTMS
+{% elif page_type == 'terms' %}Terms of Service - ACTMS
+{% elif page_type == 'contact' %}Contact Us - ACTMS
+{% elif page_type == 'docs' %}Documentation - ACTMS
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="legal-page">
+        {% if page_type == 'privacy' %}
+        <div class="legal-content glass-card fade-in">
+            <h1 class="text-primary mb-xl">Privacy Policy</h1>
+            
+            <div class="legal-section mb-xl">
+                <h2 class="text-primary mb-lg">Information Collection</h2>
+                <p class="text-secondary mb-md">
+                    ACTMS collects information to provide transparent and secure tender management services. 
+                    We collect data through your interactions with our platform, including account creation, 
+                    bid submissions, and system usage.
+                </p>
+                <p class="text-secondary">
+                    Types of information collected include company details, contact information, 
+                    bid proposals, and platform usage analytics for security and improvement purposes.
+                </p>
+            </div>
+
+            <div class="legal-section mb-xl">
+                <h2 class="text-primary mb-lg">Data Usage</h2>
+                <p class="text-secondary mb-md">
+                    Your data is used to facilitate tender processes, prevent fraud through AI analysis, 
+                    and improve our services. We employ advanced security measures to protect your information.
+                </p>
+                <ul class="legal-list text-secondary">
+                    <li>Tender and bid processing</li>
+                    <li>Fraud detection and prevention</li>
+                    <li>Platform security and monitoring</li>
+                    <li>Service improvement and analytics</li>
+                </ul>
+            </div>
+
+            <div class="legal-section mb-xl">
+                <h2 class="text-primary mb-lg">Data Protection</h2>
+                <p class="text-secondary">
+                    ACTMS implements industry-standard security measures including encryption, 
+                    secure data transmission, and regular security audits to protect your information 
+                    from unauthorized access or disclosure.
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2 class="text-primary mb-lg">Contact Information</h2>
+                <p class="text-secondary">
+                    For privacy-related questions or concerns, contact us at privacy@actms.gov 
+                    or through our official contact channels.
+                </p>
+            </div>
+        </div>
+
+        {% elif page_type == 'terms' %}
+        <div class="legal-content glass-card fade-in">
+            <h1 class="text-primary mb-xl">Terms of Service</h1>
+            
+            <div class="legal-section mb-xl">
+                <h2 class="text-primary mb-lg">Platform Usage</h2>
+                <p class="text-secondary mb-md">
+                    By accessing ACTMS, you agree to use the platform responsibly and in accordance 
+                    with all applicable laws and regulations governing public procurement.
+                </p>
+                <p class="text-secondary">
+                    Users must provide accurate information and maintain the confidentiality 
+                    of their account credentials.
+                </p>
+            </div>
+
+            <div class="legal-section mb-xl">
+                <h2 class="text-primary mb-lg">Tender Submission Rules</h2>
+                <ul class="legal-list text-secondary">
+                    <li>All submissions must be accurate and truthful</li>
+                    <li>Required documents must be provided in specified formats</li>
+                    <li>Deadline compliance is mandatory</li>
+                    <li>Modifications after submission require approval</li>
+                </ul>
+            </div>
+
+            <div class="legal-section mb-xl">
+                <h2 class="text-primary mb-lg">AI System Usage</h2>
+                <p class="text-secondary">
+                    ACTMS employs AI systems for fraud detection and process optimization. 
+                    By using the platform, you consent to AI analysis of your submissions 
+                    for security and quality assurance purposes.
+                </p>
+            </div>
+
+            <div class="legal-section">
+                <h2 class="text-primary mb-lg">Liability</h2>
+                <p class="text-secondary">
+                    Users are responsible for the accuracy of their submissions. 
+                    ACTMS provides the platform as-is and users assume responsibility 
+                    for their use of the system.
+                </p>
+            </div>
+        </div>
+
+        {% elif page_type == 'contact' %}
+        <div class="contact-content">
+            <div class="contact-header glass-card text-center fade-in mb-xl">
+                <h1 class="text-primary mb-lg">Contact ACTMS</h1>
+                <p class="text-secondary">
+                    Get in touch with our team for support, inquiries, or technical assistance
+                </p>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="contact-info glass-card fade-in">
+                    <h2 class="text-primary mb-lg">Contact Information</h2>
+                    
+                    <div class="contact-item mb-lg">
+                        {% from 'partials/icons.html' import icon %}
+                        {{ icon('mail', 'lg', 'glass') }}
+                        <div class="contact-details">
+                            <div class="contact-label">Email Support</div>
+                            <div class="contact-value text-primary">support@actms.gov</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item mb-lg">
+                        {{ icon('phone', 'lg', 'glass') }}
+                        <div class="contact-details">
+                            <div class="contact-label">Phone Support</div>
+                            <div class="contact-value text-primary">+1 (555) 123-ACTMS</div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item mb-lg">
+                        {{ icon('building', 'lg', 'glass') }}
+                        <div class="contact-details">
+                            <div class="contact-label">Office Address</div>
+                            <div class="contact-value text-primary">
+                                123 Government Plaza<br>
+                                Capital City, ST 12345<br>
+                                United States
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-item">
+                        {{ icon('clock', 'lg', 'glass') }}
+                        <div class="contact-details">
+                            <div class="contact-label">Support Hours</div>
+                            <div class="contact-value text-primary">
+                                Monday - Friday: 8:00 AM - 6:00 PM EST<br>
+                                Emergency Support: 24/7
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form glass-card fade-in" style="animation-delay: 0.2s;">
+                    <h2 class="text-primary mb-lg">Send Message</h2>
+                    
+                    <form id="contact-form" onsubmit="submitContactForm(event)">
+                        <div class="input-group">
+                            <label class="input-label">Full Name *</label>
+                            <input type="text" class="input" name="name" required placeholder="Enter your name">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Email Address *</label>
+                            <input type="email" class="input" name="email" required placeholder="your@email.com">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Subject *</label>
+                            <select class="select" name="subject" required>
+                                <option value="">Select Subject</option>
+                                <option value="technical">Technical Support</option>
+                                <option value="account">Account Issues</option>
+                                <option value="billing">Billing Questions</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Message *</label>
+                            <textarea class="textarea" name="message" required rows="5" 
+                                      placeholder="Describe your inquiry or issue..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-full" id="contact-submit-btn">
+                            <span id="contact-submit-text">Send Message</span>
+                            <span id="contact-submit-loading" class="hidden">Sending...</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% elif page_type == 'docs' %}
+        <div class="docs-content">
+            <div class="docs-header glass-card fade-in mb-xl">
+                <h1 class="text-primary mb-lg">ACTMS Documentation</h1>
+                <p class="text-secondary">
+                    Comprehensive guide to using the Anti-Corruption Tender Management System
+                </p>
+            </div>
+
+            <div class="docs-nav glass-card mb-xl fade-in" style="animation-delay: 0.1s;">
+                <div class="docs-nav-header">
+                    <h3 class="text-primary">Quick Navigation</h3>
+                </div>
+                <div class="docs-nav-links">
+                    <a href="#getting-started" class="nav-link">Getting Started</a>
+                    <a href="#tender-management" class="nav-link">Tender Management</a>
+                    <a href="#bid-submission" class="nav-link">Bid Submission</a>
+                    <a href="#ai-features" class="nav-link">AI Features</a>
+                    <a href="#api-reference" class="nav-link">API Reference</a>
+                </div>
+            </div>
+
+            <div class="docs-sections">
+                <div class="docs-section glass-card mb-xl fade-in" style="animation-delay: 0.2s;" id="getting-started">
+                    <h2 class="text-primary mb-lg">Getting Started</h2>
+                    
+                    <h3 class="text-primary mb-md">System Overview</h3>
+                    <p class="text-secondary mb-md">
+                        ACTMS is a comprehensive platform designed to ensure transparency and prevent corruption 
+                        in government tender processes through AI-powered fraud detection.
+                    </p>
+
+                    <h3 class="text-primary mb-md">Key Features</h3>
+                    <ul class="docs-list text-secondary">
+                        <li>Transparent tender management</li>
+                        <li>Secure bid submission process</li>
+                        <li>Real-time fraud detection</li>
+                        <li>Comprehensive analytics dashboard</li>
+                        <li>AI-powered insights and recommendations</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section glass-card mb-xl fade-in" style="animation-delay: 0.3s;" id="tender-management">
+                    <h2 class="text-primary mb-lg">Tender Management</h2>
+                    
+                    <h3 class="text-primary mb-md">Creating Tenders</h3>
+                    <p class="text-secondary mb-md">
+                        Navigate to the Tender Management page to create new tenders:
+                    </p>
+                    <ol class="docs-list text-secondary">
+                        <li>Fill in tender details (title, department, budget, deadline)</li>
+                        <li>Provide comprehensive description and requirements</li>
+                        <li>Upload supporting documents</li>
+                        <li>Review and publish</li>
+                    </ol>
+
+                    <h3 class="text-primary mb-md">Monitoring Tenders</h3>
+                    <p class="text-secondary">
+                        Use the analytics dashboard to monitor tender performance, 
+                        track bid submissions, and analyze department-wise distribution.
+                    </p>
+                </div>
+
+                <div class="docs-section glass-card mb-xl fade-in" style="animation-delay: 0.4s;" id="bid-submission">
+                    <h2 class="text-primary mb-lg">Bid Submission</h2>
+                    
+                    <h3 class="text-primary mb-md">Multi-Step Process</h3>
+                    <p class="text-secondary mb-md">
+                        The bid submission follows a secure 5-step process:
+                    </p>
+                    <ol class="docs-list text-secondary">
+                        <li><strong>Select Tender:</strong> Choose from active tenders</li>
+                        <li><strong>Company Info:</strong> Provide company details and registration</li>
+                        <li><strong>Bid Details:</strong> Enter bid amount and proposal</li>
+                        <li><strong>Upload Documents:</strong> Attach required documentation</li>
+                        <li><strong>Review & Submit:</strong> Verify and digitally sign</li>
+                    </ol>
+                </div>
+
+                <div class="docs-section glass-card mb-xl fade-in" style="animation-delay: 0.5s;" id="ai-features">
+                    <h2 class="text-primary mb-lg">AI Features</h2>
+                    
+                    <h3 class="text-primary mb-md">Fraud Detection</h3>
+                    <p class="text-secondary mb-md">
+                        Our AI system analyzes multiple factors to detect potential fraud:
+                    </p>
+                    <ul class="docs-list text-secondary">
+                        <li>Bid amount anomalies and pricing patterns</li>
+                        <li>Document similarity analysis</li>
+                        <li>Company network connections</li>
+                        <li>Submission timing patterns</li>
+                        <li>Historical behavior analysis</li>
+                    </ul>
+
+                    <h3 class="text-primary mb-md">Model Training</h3>
+                    <p class="text-secondary">
+                        The system continuously learns and improves through regular model training 
+                        using new data and feedback from fraud investigations.
+                    </p>
+                </div>
+
+                <div class="docs-section glass-card fade-in" style="animation-delay: 0.6s;" id="api-reference">
+                    <h2 class="text-primary mb-lg">API Reference</h2>
+                    
+                    <h3 class="text-primary mb-md">Available Endpoints</h3>
+                    <div class="api-endpoints">
+                        <div class="endpoint-item mb-md">
+                            <div class="endpoint-method">GET</div>
+                            <div class="endpoint-path">/api/dashboard</div>
+                            <div class="endpoint-desc">System metrics and statistics</div>
+                        </div>
+                        
+                        <div class="endpoint-item mb-md">
+                            <div class="endpoint-method">POST</div>
+                            <div class="endpoint-path">/api/tenders</div>
+                            <div class="endpoint-desc">Create new tender</div>
+                        </div>
+                        
+                        <div class="endpoint-item mb-md">
+                            <div class="endpoint-method">POST</div>
+                            <div class="endpoint-path">/api/bids</div>
+                            <div class="endpoint-desc">Submit bid proposal</div>
+                        </div>
+                        
+                        <div class="endpoint-item">
+                            <div class="endpoint-method">POST</div>
+                            <div class="endpoint-path">/api/chat</div>
+                            <div class="endpoint-desc">AI assistant interaction</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+/* Legal Page Styles */
+.legal-page {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.legal-content {
+    padding: 3rem;
+}
+
+.legal-section {
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 2rem;
+}
+
+.legal-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.legal-list {
+    padding-left: 1.5rem;
+    line-height: 1.8;
+}
+
+.legal-list li {
+    margin-bottom: 0.5rem;
+}
+
+/* Contact Styles */
+.contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.contact-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.contact-details {
+    flex: 1;
+}
+
+.contact-label {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.contact-value {
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+}
+
+/* Docs Styles */
+.docs-nav {
+    padding: 1.5rem;
+}
+
+.docs-nav-header {
+    margin-bottom: 1rem;
+}
+
+.docs-nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.nav-link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    transition: all var(--transition-base);
+}
+
+.nav-link:hover {
+    color: var(--color-text-primary);
+    border-color: rgba(255,255,255,0.2);
+    background: var(--glass-hover);
+}
+
+.docs-section {
+    padding: 2rem;
+}
+
+.docs-list {
+    padding-left: 1.5rem;
+    line-height: 1.8;
+}
+
+.docs-list li {
+    margin-bottom: 0.5rem;
+}
+
+.api-endpoints {
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.endpoint-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--glass-fill);
+}
+
+.endpoint-item:last-child {
+    border-bottom: none;
+}
+
+.endpoint-method {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-weight: var(--font-weight-bold);
+    font-size: 0.75rem;
+    min-width: 60px;
+    text-align: center;
+}
+
+.endpoint-path {
+    font-family: 'Monaco', 'Consolas', monospace;
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    flex: 1;
+}
+
+.endpoint-desc {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .legal-content {
+        padding: 2rem 1.5rem;
+    }
+    
+    .docs-nav-links {
+        flex-direction: column;
+    }
+    
+    .nav-link {
+        text-align: center;
+    }
+    
+    .docs-section {
+        padding: 1.5rem;
+    }
+    
+    .endpoint-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .endpoint-method {
+        min-width: auto;
+    }
+    
+    .contact-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+function submitContactForm(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitBtn = document.getElementById('contact-submit-btn');
+    const submitText = document.getElementById('contact-submit-text');
+    const submitLoading = document.getElementById('contact-submit-loading');
+    
+    // Show loading state
+    submitText.classList.add('hidden');
+    submitLoading.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    // Simulate form submission
+    setTimeout(() => {
+        actms.showToast('Message sent successfully! We\'ll get back to you soon.', 'success');
+        form.reset();
+        
+        // Reset button state
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+        submitBtn.disabled = false;
+    }, 2000);
+}
+</script>
+{% endblock %}

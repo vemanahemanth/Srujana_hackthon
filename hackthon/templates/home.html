@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}ACTMS - Transparent Tenders. AI-Powered Integrity.{% endblock %}
+{% block nav_home %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <section class="hero-section section" style="min-height: 80vh; display: flex; align-items: center;">
+        <div class="grid grid-2" style="align-items: center; gap: 4rem;">
+            <!-- Left Side - Text Content -->
+            <div class="hero-content fade-in">
+                <h1 class="hero-title" style="font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem;">
+                    Transparent Tenders.<br>
+                    <span class="text-secondary">AI-Powered Integrity.</span>
+                </h1>
+                
+                <p class="hero-subtitle" style="font-size: 1.25rem; margin-bottom: 3rem; max-width: 600px;">
+                    Revolutionizing government tender processes with advanced AI fraud detection, 
+                    comprehensive audit trails, and complete transparency for all stakeholders.
+                </p>
+                
+                <div class="hero-buttons flex gap-lg">
+                    <a href="/dashboard" class="btn btn-primary">Get Started</a>
+                    <a href="#features" class="btn btn-secondary">Learn More</a>
+                </div>
+            </div>
+            
+            <!-- Right Side - Floating Dashboard Preview -->
+            <div class="hero-preview fade-in" style="animation-delay: 0.3s;">
+                <div class="preview-card glass-card" style="transform: translateY(-20px); animation: floating 3s ease-in-out infinite;">
+                    <div class="preview-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h4 class="text-primary mb-0">Live Dashboard</h4>
+                        <div class="status-indicator" style="width: 8px; height: 8px; background: #00FF00; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                    </div>
+                    
+                    <div class="preview-stats grid grid-2" style="gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="stat-item">
+                            <div class="stat-number text-primary" style="font-size: 1.5rem; font-weight: bold;">156</div>
+                            <div class="stat-label" style="font-size: 0.875rem;">Active Tenders</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number text-primary" style="font-size: 1.5rem; font-weight: bold;">23</div>
+                            <div class="stat-label" style="font-size: 0.875rem;">AI Alerts</div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-chart" style="height: 120px; background: rgba(255,255,255,0.02); border-radius: 8px; position: relative; overflow: hidden;">
+                        <div class="chart-bars" style="display: flex; align-items: end; height: 100%; padding: 1rem; gap: 0.5rem;">
+                            <div class="bar" style="flex: 1; background: rgba(255,255,255,0.8); height: 60%; border-radius: 2px; animation: growHeight 2s ease-out 1s both;"></div>
+                            <div class="bar" style="flex: 1; background: rgba(255,255,255,0.6); height: 80%; border-radius: 2px; animation: growHeight 2s ease-out 1.2s both;"></div>
+                            <div class="bar" style="flex: 1; background: rgba(255,255,255,0.4); height: 45%; border-radius: 2px; animation: growHeight 2s ease-out 1.4s both;"></div>
+                            <div class="bar" style="flex: 1; background: rgba(255,255,255,0.7); height: 75%; border-radius: 2px; animation: growHeight 2s ease-out 1.6s both;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section section">
+        <div class="section-header text-center mb-xl">
+            <h2 class="text-primary">Comprehensive Anti-Corruption Platform</h2>
+            <p class="text-secondary" style="max-width: 600px; margin: 0 auto;">
+                Advanced technology meets transparent governance for a corruption-free tender ecosystem.
+            </p>
+        </div>
+        
+        <div class="features-grid grid grid-3">
+            <div class="feature-card glass-card fade-in text-center">
+                {% from 'partials/icons.html' import glass_icon %}
+                {{ glass_icon('search', 'xl', 'glass', pulse=True, style='margin-bottom: 1.5rem; display: block;') }}
+                <h3 class="text-primary">Tender Transparency</h3>
+                <p>Complete visibility into every tender process with comprehensive audit trails, 
+                   real-time updates, and accessible documentation for all stakeholders.</p>
+            </div>
+            
+            <div class="feature-card glass-card fade-in text-center" style="animation-delay: 0.2s;">
+                {{ glass_icon('brain', 'xl', 'glass', float=True, status='info', style='margin-bottom: 1.5rem; display: block;') }}
+                <h3 class="text-primary">AI Fraud Detection</h3>
+                <p>State-of-the-art machine learning algorithms analyze bidding patterns, 
+                   detect anomalies, and flag suspicious activities in real-time.</p>
+            </div>
+            
+            <div class="feature-card glass-card fade-in text-center" style="animation-delay: 0.4s;">
+                {{ glass_icon('briefcase', 'xl', 'glass', pulse=True, status='success', style='margin-bottom: 1.5rem; display: block;') }}
+                <h3 class="text-primary">Seamless Bidding</h3>
+                <p>Streamlined submission process with secure file handling, automated validation, 
+                   and intelligent proposal analysis for fair competition.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Stats Strip -->
+    <section class="stats-section section">
+        <div class="stats-container glass-card">
+            <div class="stats-grid grid grid-4">
+                <div class="stat-item text-center">
+                    <div class="stat-number text-primary" style="font-size: 2.5rem; font-weight: bold;" data-count="1247">0</div>
+                    <div class="stat-label">Tenders Published</div>
+                </div>
+                
+                <div class="stat-item text-center">
+                    <div class="stat-number text-primary" style="font-size: 2.5rem; font-weight: bold;" data-count="8934">0</div>
+                    <div class="stat-label">Bids Submitted</div>
+                </div>
+                
+                <div class="stat-item text-center">
+                    <div class="stat-number text-primary" style="font-size: 2.5rem; font-weight: bold;" data-count="156">0</div>
+                    <div class="stat-label">Suspicious Activities Detected</div>
+                </div>
+                
+                <div class="stat-item text-center">
+                    <div class="stat-number text-primary" style="font-size: 2.5rem; font-weight: bold;" data-count="99">0</div>
+                    <div class="stat-label">Accuracy Rate (%)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust & Partners Section -->
+    <section class="trust-section section">
+        <div class="section-header text-center mb-xl">
+            <h3 class="text-primary">Trusted by Government Institutions</h3>
+            <p class="text-secondary">Partnering with leading organizations to ensure transparency and integrity</p>
+        </div>
+        
+        <div class="trust-logos glass-card">
+            <div class="logos-grid" style="display: flex; justify-content: space-around; align-items: center; opacity: 0.6; flex-wrap: wrap; gap: 2rem;">
+                <div class="logo-item" style="font-size: 1.5rem; color: var(--color-text-secondary);">🏛️ GOV</div>
+                <div class="logo-item" style="font-size: 1.5rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                    {{ icon('building', 'md', 'muted') }} DEPT
+                </div>
+                <div class="logo-item" style="font-size: 1.5rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                    {{ icon('shield', 'md', 'muted') }} AUDIT
+                </div>
+                <div class="logo-item" style="font-size: 1.5rem; color: var(--color-text-secondary);">🛡️ SECURITY</div>
+                <div class="logo-item" style="font-size: 1.5rem; color: var(--color-text-secondary); display: flex; align-items: center; gap: 0.5rem;">
+                    {% from 'partials/icons.html' import icon %}
+                    {{ icon('chart-pie', 'md', 'muted') }} ANALYTICS
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section section text-center">
+        <div class="cta-card glass-card" style="max-width: 800px; margin: 0 auto;">
+            <h2 class="text-primary mb-lg">Ready to Transform Your Tender Process?</h2>
+            <p class="text-secondary mb-xl" style="font-size: 1.125rem;">
+                Join the revolution in transparent governance. Start detecting corruption and ensuring integrity in your tender processes today.
+            </p>
+            
+            <div class="cta-buttons flex justify-center gap-lg">
+                <a href="/tenders" class="btn btn-primary">Start Managing Tenders</a>
+                <a href="/ai-analysis" class="btn btn-secondary">Explore AI Features</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section section" style="margin-top: 4rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+        <div class="footer-content" style="display: flex; justify-content: between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+            <div class="footer-brand">
+                <div class="nav-logo">🛡️ ACTMS</div>
+                <p class="text-secondary" style="margin-top: 0.5rem;">Anti-Corruption Tender Management System</p>
+            </div>
+            
+            <div class="footer-links flex gap-lg">
+                <a href="/privacy" class="text-secondary" style="text-decoration: none;">Privacy Policy</a>
+                <a href="/terms" class="text-secondary" style="text-decoration: none;">Terms of Service</a>
+                <a href="/contact" class="text-secondary" style="text-decoration: none;">Contact</a>
+                <a href="/docs" class="text-secondary" style="text-decoration: none;">Documentation</a>
+            </div>
+            
+            <div class="footer-toggle">
+                <label class="theme-toggle">
+                    <input type="checkbox" id="demo-content-toggle">
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label text-secondary">Demo Content</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="footer-bottom text-center" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.05);">
+            <p class="text-secondary" style="font-size: 0.875rem;">
+                © 2025 ACTMS. Built for transparency, powered by AI.
+            </p>
+        </div>
+    </footer>
+</div>
+
+<style>
+/* Hero-specific animations */
+@keyframes floating {
+    0%, 100% { transform: translateY(-20px); }
+    50% { transform: translateY(-30px); }
+}
+
+@keyframes growHeight {
+    from { height: 0; }
+    to { height: var(--target-height, 60%); }
+}
+
+.bar:nth-child(1) { --target-height: 60%; }
+.bar:nth-child(2) { --target-height: 80%; }
+.bar:nth-child(3) { --target-height: 45%; }
+.bar:nth-child(4) { --target-height: 75%; }
+
+/* Toggle Switch Styles */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 50px;
+    height: 24px;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    transition: all var(--transition-base);
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: var(--color-text-primary);
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: all var(--transition-base);
+}
+
+input[type="checkbox"]:checked + .toggle-slider::before {
+    transform: translateX(26px);
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+/* Stats Animation */
+.stats-container {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--glass-blur);
+    border-radius: var(--glass-radius);
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+    animation: statsShimmer 3s infinite;
+}
+
+@keyframes statsShimmer {
+    100% { left: 100%; }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem !important;
+    }
+    
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .hero-section {
+        text-align: center;
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .footer-links {
+        justify-content: center;
+    }
+    
+    .logos-grid {
+        gap: 1rem !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate counters when stats section comes into view
+    const statsSection = document.querySelector('.stats-section');
+    let animated = false;
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !animated) {
+                animated = true;
+                const statNumbers = document.querySelectorAll('.stat-number[data-count]');
+                
+                statNumbers.forEach(element => {
+                    const target = parseInt(element.dataset.count);
+                    actms.animateCounter(element, 0, target, 2000);
+                });
+            }
+        });
+    }, {
+        threshold: 0.5
+    });
+    
+    observer.observe(statsSection);
+    
+    // Demo content toggle functionality
+    const demoToggle = document.getElementById('demo-content-toggle');
+    if (demoToggle) {
+        demoToggle.addEventListener('change', function() {
+            if (this.checked) {
+                actms.showToast('Demo content enabled - showing sample data', 'info');
+                // Here you could load demo data or modify the display
+            } else {
+                actms.showToast('Demo content disabled - showing live data', 'info');
+                // Here you could load live data
+            }
+        });
+    }
+    
+    // Load real stats from API
+    loadLiveStats();
+});
+
+async function loadLiveStats() {
+    try {
+        const data = await actms.getDashboardData();
+        
+        // Update stats with real data
+        const stats = [
+            { element: document.querySelector('[data-count="1247"]'), value: data.total_tenders || 1247 },
+            { element: document.querySelector('[data-count="8934"]'), value: data.active_bids || 8934 },
+            { element: document.querySelector('[data-count="156"]'), value: data.suspicious_flags || 156 },
+            { element: document.querySelector('[data-count="99"]'), value: 99 } // Accuracy rate stays static
+        ];
+        
+        stats.forEach(stat => {
+            if (stat.element) {
+                stat.element.dataset.count = stat.value;
+            }
+        });
+        
+        // Update preview stats
+        const previewStats = document.querySelectorAll('.preview-stats .stat-number');
+        if (previewStats.length >= 2) {
+            previewStats[0].textContent = data.total_tenders || 156;
+            previewStats[1].textContent = data.alerts_today || 23;
+        }
+        
+    } catch (error) {
+        console.log('Using demo stats - API not available');
+    }
+}
+</script>
+{% endblock %}

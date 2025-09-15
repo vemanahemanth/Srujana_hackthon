@@ -1,0 +1,1424 @@
+{% extends "base.html" %}
+
+{% block title %}AI Analysis - ACTMS{% endblock %}
+{% block nav_ai %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header section">
+        <div class="header-content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="text-primary mb-sm">AI Analysis Center</h1>
+                <p class="text-secondary">Advanced machine learning insights and fraud detection analytics</p>
+            </div>
+            
+            <div class="ai-status glass" style="padding: 0.75rem 1rem; border-radius: 8px;">
+                <div class="status-indicator" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="status-dot" style="width: 8px; height: 8px; background: #00FF00; border-radius: 50%; animation: pulse 2s infinite;"></div>
+                    <span class="text-primary">AI Engine: Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Metrics Overview -->
+    <div class="ai-metrics-section mb-xl">
+        <div class="grid grid-4">
+            <div class="metric-card glass-card text-center fade-in">
+                {% from 'partials/icons.html' import glass_icon %}
+                {{ glass_icon('robot', 'lg', 'glass', pulse=True, status='info', style='margin-bottom: 1rem;') }}
+                <div class="metric-value text-primary" style="font-size: 1.5rem; font-weight: bold;" id="model-accuracy">99.2%</div>
+                <div class="metric-label">Model Accuracy</div>
+            </div>
+            
+            <div class="metric-card glass-card text-center fade-in" style="animation-delay: 0.1s;">
+                {{ glass_icon('bolt', 'lg', 'glass', float=True, status='success', style='margin-bottom: 1rem;') }}
+                <div class="metric-value text-primary" style="font-size: 1.5rem; font-weight: bold;" id="processed-today">1,247</div>
+                <div class="metric-label">Bids Processed Today</div>
+            </div>
+            
+            <div class="metric-card glass-card text-center fade-in" style="animation-delay: 0.2s;">
+                {{ glass_icon('alert', 'lg', 'glass', status='warning', style='margin-bottom: 1rem;') }}
+                <div class="metric-value text-primary" style="font-size: 1.5rem; font-weight: bold;" id="anomalies-detected">23</div>
+                <div class="metric-label">Anomalies Detected</div>
+            </div>
+            
+            <div class="metric-card glass-card text-center fade-in" style="animation-delay: 0.3s;">
+                {{ glass_icon('clock', 'lg', 'glass', pulse=True, status='info', style='margin-bottom: 1rem;') }}
+                <div class="metric-value text-primary" style="font-size: 1.5rem; font-weight: bold;" id="avg-response-time">0.3s</div>
+                <div class="metric-label">Avg Response Time</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="alerts">Real-time Alerts</button>
+            <button class="tab-button" data-tab="anomaly">Anomaly Dashboard</button>
+            <button class="tab-button" data-tab="training">Model Training</button>
+            <button class="tab-button" data-tab="patterns">Pattern Analysis</button>
+        </div>
+
+        <!-- Real-time Alerts Tab -->
+        <div class="tab-content active" data-content="alerts">
+            <div class="alerts-layout grid grid-3">
+                <!-- Live Alerts Feed -->
+                <div class="alerts-feed glass-card fade-in" style="grid-column: span 2;">
+                    <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 class="text-primary">Live Alert Feed</h3>
+                        <div class="feed-controls flex gap-md">
+                            <select class="input" id="alert-filter" onchange="filterAlerts()" style="min-width: 120px;">
+                                <option value="">All Types</option>
+                                <option value="high">High Risk</option>
+                                <option value="medium">Medium Risk</option>
+                                <option value="pattern">Pattern Match</option>
+                                <option value="anomaly">Anomaly</option>
+                            </select>
+                            <button class="btn btn-secondary" onclick="pauseAlerts()" id="pause-alerts-btn">
+                                <span id="pause-text">⏸️ Pause</span>
+                                <span id="resume-text" class="hidden">▶️ Resume</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="alerts-container" id="alerts-container" style="max-height: 500px; overflow-y: auto;">
+                        <!-- Alerts will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Alert Summary -->
+                <div class="alert-summary glass-card fade-in" style="animation-delay: 0.2s;">
+                    <h3 class="text-primary mb-lg">Alert Summary</h3>
+                    
+                    <div class="summary-chart mb-lg">
+                        <canvas id="alertSummaryChart" style="max-height: 200px;"></canvas>
+                    </div>
+
+                    <div class="alert-counts">
+                        <div class="count-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Critical</span>
+                            <span class="text-primary" id="critical-count">2</span>
+                        </div>
+                        <div class="count-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>High</span>
+                            <span class="text-primary" id="high-count">8</span>
+                        </div>
+                        <div class="count-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Medium</span>
+                            <span class="text-primary" id="medium-count">13</span>
+                        </div>
+                        <div class="count-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span>Low</span>
+                            <span class="text-primary" id="low-count">45</span>
+                        </div>
+                    </div>
+
+                    <div class="alert-trends mt-lg">
+                        <h4 class="text-primary mb-md">24h Trend</h4>
+                        <div class="trend-indicator">
+                            <div class="trend-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0;">
+                                <span>Total Alerts</span>
+                                <div class="trend-value">
+                                    <span class="text-primary">68</span>
+                                    <span class="trend-change" style="color: #90EE90; font-size: 0.75rem;">↓ 12%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Anomaly Dashboard Tab -->
+        <div class="tab-content" data-content="anomaly">
+            <div class="anomaly-dashboard">
+                <div class="grid grid-2 mb-xl">
+                    <!-- Anomaly Score Distribution -->
+                    <div class="chart-container glass-card fade-in">
+                        <h3 class="text-primary mb-lg">Anomaly Score Distribution</h3>
+                        <div class="chart-wrapper" style="height: 350px; position: relative;">
+                            <canvas id="anomalyDistributionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Scatter Plot -->
+                    <div class="chart-container glass-card fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-primary mb-lg">Anomaly Timeline</h3>
+                        <div class="chart-wrapper" style="height: 350px; position: relative;">
+                            <canvas id="anomalyTimelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Anomalies Table -->
+                <div class="anomalies-table glass-card fade-in" style="animation-delay: 0.4s;">
+                    <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 class="text-primary">Recent Anomalies</h3>
+                        <div class="table-controls">
+                            <button class="btn btn-secondary" onclick="exportAnomalies()">
+                                📊 Export Data
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="anomalies-data-table" id="anomalies-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Bid ID</th>
+                                    <th>Company</th>
+                                    <th>Score</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Training Tab -->
+        <div class="tab-content" data-content="training">
+            <div class="training-dashboard">
+                <div class="grid grid-2">
+                    <!-- Training Controls -->
+                    <div class="training-controls glass-card fade-in">
+                        <h3 class="text-primary mb-lg">Model Training</h3>
+                        
+                        <div class="current-model mb-lg">
+                            <h4 class="text-primary mb-md">Current Model Status</h4>
+                            <div class="model-info">
+                                <div class="info-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Model Version:</span>
+                                    <span class="text-primary">v2.1.3</span>
+                                </div>
+                                <div class="info-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Last Trained:</span>
+                                    <span class="text-primary">2 hours ago</span>
+                                </div>
+                                <div class="info-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Training Data:</span>
+                                    <span class="text-primary">15,247 samples</span>
+                                </div>
+                                <div class="info-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                                    <span>Status:</span>
+                                    <span class="text-primary">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="training-actions">
+                            <button class="btn btn-primary w-full mb-md" onclick="startTraining()" id="train-btn">
+                                🤖 Start Training
+                            </button>
+                            <button class="btn btn-secondary w-full mb-md" onclick="validateModel()">
+                                ✅ Validate Model
+                            </button>
+                            <button class="btn btn-secondary w-full" onclick="exportModel()">
+                                📦 Export Model
+                            </button>
+                        </div>
+
+                        <!-- Training Progress -->
+                        <div class="training-progress" id="training-progress" style="display: none;">
+                            <h4 class="text-primary mb-md">Training in Progress</h4>
+                            <div class="progress-info mb-md">
+                                <div class="progress-text" style="display: flex; justify-content: space-between;">
+                                    <span>Epoch <span id="current-epoch">1</span>/100</span>
+                                    <span id="training-percentage">0%</span>
+                                </div>
+                            </div>
+                            <div class="progress-bar mb-md">
+                                <div class="progress-fill training-fill" id="training-progress-fill"></div>
+                            </div>
+                            <div class="training-metrics">
+                                <div class="metric-row" style="display: flex; justify-content: space-between; font-size: 0.875rem;">
+                                    <span>Loss: <span class="text-primary" id="current-loss">0.0234</span></span>
+                                    <span>Accuracy: <span class="text-primary" id="current-accuracy">98.7%</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Logs -->
+                    <div class="training-logs glass-card fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-primary mb-lg">Training Logs</h3>
+                        
+                        <div class="logs-container" id="training-logs" style="background: var(--color-bg-start); border: 1px solid var(--glass-border); border-radius: 8px; padding: 1rem; height: 400px; overflow-y: auto; font-family: 'Monaco', 'Consolas', monospace; font-size: 0.875rem;">
+                            <div class="log-line">
+                                <span style="color: #90EE90;">[2025-09-14 23:30:15]</span> 
+                                <span style="color: var(--color-text-primary);">INFO</span> - 
+                                <span style="color: var(--color-text-secondary);">ML service initialized successfully</span>
+                            </div>
+                            <div class="log-line">
+                                <span style="color: #90EE90;">[2025-09-14 23:30:16]</span> 
+                                <span style="color: var(--color-text-primary);">INFO</span> - 
+                                <span style="color: var(--color-text-secondary);">Loading training data...</span>
+                            </div>
+                            <div class="log-line">
+                                <span style="color: #90EE90;">[2025-09-14 23:30:17]</span> 
+                                <span style="color: var(--color-text-primary);">INFO</span> - 
+                                <span style="color: var(--color-text-secondary);">Found 15,247 training samples</span>
+                            </div>
+                            <div class="log-line">
+                                <span style="color: #90EE90;">[2025-09-14 23:30:18]</span> 
+                                <span style="color: var(--color-text-primary);">INFO</span> - 
+                                <span style="color: var(--color-text-secondary);">Model ready for training</span>
+                            </div>
+                        </div>
+
+                        <div class="logs-controls mt-md">
+                            <button class="btn btn-secondary" onclick="clearLogs()" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                Clear Logs
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportLogs()" style="font-size: 0.875rem; padding: 0.5rem 1rem;">
+                                Export Logs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Model Metrics -->
+                <div class="model-metrics glass-card mt-xl fade-in" style="animation-delay: 0.4s;">
+                    <h3 class="text-primary mb-lg">Model Performance Metrics</h3>
+                    
+                    <div class="metrics-chart mb-lg">
+                        <canvas id="modelMetricsChart" style="height: 300px;"></canvas>
+                    </div>
+
+                    <div class="metrics-summary grid grid-4">
+                        <div class="metric-item text-center">
+                            <div class="metric-name text-secondary mb-sm">Precision</div>
+                            <div class="metric-score text-primary" style="font-size: 1.5rem; font-weight: bold;">96.8%</div>
+                        </div>
+                        <div class="metric-item text-center">
+                            <div class="metric-name text-secondary mb-sm">Recall</div>
+                            <div class="metric-score text-primary" style="font-size: 1.5rem; font-weight: bold;">94.2%</div>
+                        </div>
+                        <div class="metric-item text-center">
+                            <div class="metric-name text-secondary mb-sm">F1 Score</div>
+                            <div class="metric-score text-primary" style="font-size: 1.5rem; font-weight: bold;">95.5%</div>
+                        </div>
+                        <div class="metric-item text-center">
+                            <div class="metric-name text-secondary mb-sm">AUC-ROC</div>
+                            <div class="metric-score text-primary" style="font-size: 1.5rem; font-weight: bold;">0.987</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pattern Analysis Tab -->
+        <div class="tab-content" data-content="patterns">
+            <div class="pattern-analysis">
+                <div class="grid grid-2 mb-xl">
+                    <!-- Bid Amount vs Anomaly Score -->
+                    <div class="chart-container glass-card fade-in">
+                        <h3 class="text-primary mb-lg">Bid Amount vs Anomaly Score</h3>
+                        <div class="chart-wrapper" style="height: 400px; position: relative;">
+                            <canvas id="bidAmountScatterChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Pattern Explanation -->
+                    <div class="pattern-explanation glass-card fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-primary mb-lg">Pattern Insights</h3>
+                        
+                        <div class="insights-list">
+                            <div class="insight-item mb-lg">
+                                <h4 class="text-primary mb-sm">🔍 Unusual Bid Clustering</h4>
+                                <p class="text-secondary mb-sm">
+                                    Detected 3 companies submitting bids within 0.1% of each other on infrastructure tenders.
+                                </p>
+                                <div class="insight-meta" style="font-size: 0.75rem; color: var(--color-text-secondary);">
+                                    Confidence: 89% | Detected: 2 hours ago
+                                </div>
+                            </div>
+
+                            <div class="insight-item mb-lg">
+                                <h4 class="text-primary mb-sm">📈 Price Anomaly Pattern</h4>
+                                <p class="text-secondary mb-sm">
+                                    Bids significantly below market rate (>30% deviation) correlate with 94% fraud probability.
+                                </p>
+                                <div class="insight-meta" style="font-size: 0.75rem; color: var(--color-text-secondary);">
+                                    Confidence: 96% | Pattern established
+                                </div>
+                            </div>
+
+                            <div class="insight-item mb-lg">
+                                <h4 class="text-primary mb-sm">⏰ Temporal Correlation</h4>
+                                <p class="text-secondary mb-sm">
+                                    Suspicious bids tend to cluster in the final 24 hours before tender deadlines.
+                                </p>
+                                <div class="insight-meta" style="font-size: 0.75rem; color: var(--color-text-secondary);">
+                                    Confidence: 87% | Active monitoring
+                                </div>
+                            </div>
+
+                            <div class="insight-item">
+                                <h4 class="text-primary mb-sm" style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {% from 'partials/icons.html' import icon %}
+                                    {{ icon('building', 'sm', 'glass') }} Company Network Analysis
+                                </h4>
+                                <p class="text-secondary mb-sm">
+                                    Identified potential shell company network with shared contact information patterns.
+                                </p>
+                                <div class="insight-meta" style="font-size: 0.75rem; color: var(--color-text-secondary);">
+                                    Confidence: 78% | Under investigation
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Importance -->
+                <div class="feature-importance glass-card fade-in" style="animation-delay: 0.4s;">
+                    <h3 class="text-primary mb-lg">Feature Importance Analysis</h3>
+                    
+                    <div class="grid grid-2">
+                        <div class="importance-chart">
+                            <canvas id="featureImportanceChart" style="height: 300px;"></canvas>
+                        </div>
+                        
+                        <div class="feature-details">
+                            <div class="feature-list">
+                                <div class="feature-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Bid Amount Deviation</span>
+                                    <div class="importance-bar" style="width: 100px; height: 8px; background: var(--glass-fill); border-radius: 4px; position: relative;">
+                                        <div style="background: var(--color-text-primary); height: 100%; width: 85%; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="feature-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Proposal Quality Score</span>
+                                    <div class="importance-bar" style="width: 100px; height: 8px; background: var(--glass-fill); border-radius: 4px; position: relative;">
+                                        <div style="background: var(--color-text-primary); height: 100%; width: 72%; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="feature-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Company History</span>
+                                    <div class="importance-bar" style="width: 100px; height: 8px; background: var(--glass-fill); border-radius: 4px; position: relative;">
+                                        <div style="background: var(--color-text-primary); height: 100%; width: 68%; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="feature-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border);">
+                                    <span>Submission Timing</span>
+                                    <div class="importance-bar" style="width: 100px; height: 8px; background: var(--glass-fill); border-radius: 4px; position: relative;">
+                                        <div style="background: var(--color-text-primary); height: 100%; width: 45%; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="feature-item" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0;">
+                                    <span>Geographic Factors</span>
+                                    <div class="importance-bar" style="width: 100px; height: 8px; background: var(--glass-fill); border-radius: 4px; position: relative;">
+                                        <div style="background: var(--color-text-primary); height: 100%; width: 32%; border-radius: 4px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* AI Analysis specific styles */
+.ai-status {
+    display: flex;
+    align-items: center;
+}
+
+.metric-card {
+    transition: all var(--transition-base);
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--glass-shadow-hover);
+}
+
+/* Alert Styles */
+.alerts-container {
+    position: relative;
+}
+
+.alert-item {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    padding: 1rem;
+    margin-bottom: var(--spacing-sm);
+    animation: alertSlideIn 0.3s ease;
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.alert-item:hover {
+    background: var(--glass-hover);
+    transform: translateX(5px);
+}
+
+.alert-item.critical {
+    border-left: 4px solid rgba(255,255,255,0.8);
+}
+
+.alert-item.high {
+    border-left: 4px solid rgba(255,255,255,0.6);
+}
+
+.alert-item.medium {
+    border-left: 4px solid rgba(255,255,255,0.4);
+}
+
+.alert-item.low {
+    border-left: 4px solid rgba(255,255,255,0.2);
+}
+
+@keyframes alertSlideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.alert-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.5rem;
+}
+
+.alert-title {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: 0.9rem;
+}
+
+.alert-severity {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.alert-severity.critical {
+    background: rgba(255,255,255,0.2);
+    color: var(--color-text-primary);
+}
+
+.alert-severity.high {
+    background: rgba(255,255,255,0.15);
+    color: var(--color-text-primary);
+}
+
+.alert-severity.medium {
+    background: rgba(255,255,255,0.1);
+    color: var(--color-text-secondary);
+}
+
+.alert-severity.low {
+    background: rgba(255,255,255,0.05);
+    color: var(--color-text-secondary);
+}
+
+.alert-content {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.alert-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+.alert-time {
+    opacity: 0.7;
+}
+
+.alert-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.alert-action {
+    background: none;
+    border: 1px solid var(--glass-border);
+    color: var(--color-text-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.alert-action:hover {
+    color: var(--color-text-primary);
+    border-color: rgba(255,255,255,0.3);
+}
+
+/* Training Styles */
+.training-fill {
+    background: linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.9));
+    animation: trainingPulse 2s ease-in-out infinite;
+}
+
+@keyframes trainingPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+.log-line {
+    margin-bottom: 0.25rem;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 0.875rem;
+    padding: 0.125rem 0;
+}
+
+.log-line:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+/* Pattern Analysis */
+.insight-item {
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--spacing-sm);
+    padding: 1rem;
+    transition: all var(--transition-base);
+}
+
+.insight-item:hover {
+    background: rgba(255,255,255,0.08);
+    transform: translateY(-2px);
+}
+
+.feature-item {
+    transition: all var(--transition-base);
+}
+
+.feature-item:hover {
+    background: var(--glass-hover);
+    padding-left: 1rem;
+    padding-right: 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: var(--spacing-sm);
+}
+
+.importance-bar {
+    overflow: hidden;
+}
+
+.importance-bar div {
+    animation: barGrow 1.5s ease-out;
+}
+
+@keyframes barGrow {
+    from { width: 0; }
+}
+
+/* Data Tables */
+.anomalies-data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.anomalies-data-table th,
+.anomalies-data-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.anomalies-data-table th {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    background: var(--glass-hover);
+}
+
+.anomalies-data-table td {
+    color: var(--color-text-secondary);
+}
+
+.anomalies-data-table tr:hover {
+    background: var(--glass-hover);
+}
+
+.score-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.score-high {
+    background: rgba(255,255,255,0.2);
+    color: var(--color-text-primary);
+}
+
+.score-medium {
+    background: rgba(255,255,255,0.1);
+    color: var(--color-text-secondary);
+}
+
+.score-low {
+    background: rgba(255,255,255,0.05);
+    color: var(--color-text-secondary);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .alerts-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .alerts-feed {
+        grid-column: span 1 !important;
+    }
+    
+    .feed-controls {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .grid-3 {
+        grid-template-columns: 1fr;
+    }
+    
+    .anomalies-data-table {
+        font-size: 0.875rem;
+    }
+    
+    .anomalies-data-table th,
+    .anomalies-data-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .training-dashboard .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .pattern-analysis .grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .metric-value {
+        font-size: 1.25rem !important;
+    }
+    
+    .alerts-container {
+        max-height: 400px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let alertsData = [];
+let alertsPaused = false;
+let alertInterval;
+let aiCharts = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAIAnalysis();
+    startRealTimeAlerts();
+    
+    // Load charts when tabs are activated
+    document.querySelector('[data-tab="anomaly"]').addEventListener('click', () => {
+        setTimeout(loadAnomalyCharts, 100);
+    });
+    
+    document.querySelector('[data-tab="training"]').addEventListener('click', () => {
+        setTimeout(loadTrainingCharts, 100);
+    });
+    
+    document.querySelector('[data-tab="patterns"]').addEventListener('click', () => {
+        setTimeout(loadPatternCharts, 100);
+    });
+});
+
+function initializeAIAnalysis() {
+    // Initialize alert summary chart
+    loadAlertSummaryChart();
+    
+    // Load initial alerts
+    loadInitialAlerts();
+    
+    // Update metrics
+    updateAIMetrics();
+}
+
+function loadAlertSummaryChart() {
+    const ctx = document.getElementById('alertSummaryChart');
+    if (!ctx) return;
+    
+    const colors = actms.getMonochromeColors();
+    
+    aiCharts.alertSummary = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Critical', 'High', 'Medium', 'Low'],
+            datasets: [{
+                data: [2, 8, 13, 45],
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            cutout: '60%',
+            animation: {
+                animateRotate: true,
+                duration: 1500
+            }
+        }
+    });
+}
+
+function loadInitialAlerts() {
+    const sampleAlerts = [
+        {
+            id: 1,
+            type: 'anomaly',
+            severity: 'critical',
+            title: 'Unusual Bid Pattern Detected',
+            content: 'Company ABC Corp submitted 3 identical bids within 2 minutes for different infrastructure tenders.',
+            company: 'ABC Corp',
+            tender_id: 'T-2025-0156',
+            score: 0.94,
+            time: new Date(Date.now() - 2 * 60 * 1000)
+        },
+        {
+            id: 2,
+            type: 'pattern',
+            severity: 'high',
+            title: 'Price Deviation Alert',
+            content: 'Bid amount 47% below estimated market rate for healthcare equipment procurement.',
+            company: 'MedTech Solutions',
+            tender_id: 'T-2025-0189',
+            score: 0.87,
+            time: new Date(Date.now() - 8 * 60 * 1000)
+        },
+        {
+            id: 3,
+            type: 'anomaly',
+            severity: 'high',
+            title: 'Document Similarity Warning',
+            content: 'Technical proposals show 89% similarity across different companies for the same tender.',
+            company: 'Multiple Companies',
+            tender_id: 'T-2025-0203',
+            score: 0.82,
+            time: new Date(Date.now() - 15 * 60 * 1000)
+        },
+        {
+            id: 4,
+            type: 'pattern',
+            severity: 'medium',
+            title: 'Late Submission Pattern',
+            content: 'Company submitted bid in final hour, consistent with suspicious timing patterns.',
+            company: 'QuickBid LLC',
+            tender_id: 'T-2025-0167',
+            score: 0.73,
+            time: new Date(Date.now() - 25 * 60 * 1000)
+        }
+    ];
+    
+    alertsData = sampleAlerts;
+    renderAlerts();
+}
+
+function renderAlerts() {
+    const container = document.getElementById('alerts-container');
+    
+    if (alertsData.length === 0) {
+        container.innerHTML = '<div class="text-center text-secondary">No alerts to display</div>';
+        return;
+    }
+    
+    container.innerHTML = alertsData.map(alert => `
+        <div class="alert-item ${alert.severity}" data-id="${alert.id}">
+            <div class="alert-header">
+                <div class="alert-title">${alert.title}</div>
+                <div class="alert-severity ${alert.severity}">${alert.severity.toUpperCase()}</div>
+            </div>
+            <div class="alert-content">${alert.content}</div>
+            <div class="alert-meta">
+                <div class="alert-details">
+                    <span>Score: ${alert.score.toFixed(3)}</span> • 
+                    <span>${alert.company}</span> • 
+                    <span>${alert.tender_id}</span>
+                </div>
+                <div class="alert-time">${getTimeAgo(alert.time)}</div>
+            </div>
+            <div class="alert-actions">
+                <button class="alert-action" onclick="investigateAlert(${alert.id})">Investigate</button>
+                <button class="alert-action" onclick="dismissAlert(${alert.id})">Dismiss</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function startRealTimeAlerts() {
+    alertInterval = setInterval(() => {
+        if (!alertsPaused && Math.random() < 0.3) {
+            generateNewAlert();
+        }
+    }, 5000); // Check every 5 seconds
+}
+
+function generateNewAlert() {
+    const alertTypes = ['anomaly', 'pattern', 'threshold'];
+    const severities = ['critical', 'high', 'medium', 'low'];
+    const companies = ['TechCorp', 'BuildCo', 'ServiceLTD', 'Innovation Inc', 'Global Solutions'];
+    const titles = [
+        'Suspicious Bid Clustering',
+        'Unusual Price Deviation',
+        'Document Pattern Match',
+        'Timing Anomaly Detected',
+        'Company Network Alert',
+        'Threshold Violation'
+    ];
+    
+    const newAlert = {
+        id: Date.now(),
+        type: alertTypes[Math.floor(Math.random() * alertTypes.length)],
+        severity: severities[Math.floor(Math.random() * severities.length)],
+        title: titles[Math.floor(Math.random() * titles.length)],
+        content: `Automated detection system identified potential irregularity requiring investigation.`,
+        company: companies[Math.floor(Math.random() * companies.length)],
+        tender_id: `T-2025-${Math.floor(Math.random() * 1000).toString().padStart(4, '0')}`,
+        score: Math.random() * 0.3 + 0.7, // Score between 0.7 and 1.0
+        time: new Date()
+    };
+    
+    alertsData.unshift(newAlert);
+    
+    // Keep only last 20 alerts
+    if (alertsData.length > 20) {
+        alertsData = alertsData.slice(0, 20);
+    }
+    
+    renderAlerts();
+    updateAlertCounts();
+    
+    // Scroll to top of alerts
+    const container = document.getElementById('alerts-container');
+    container.scrollTop = 0;
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    
+    if (minutes < 1) return 'Just now';
+    if (minutes === 1) return '1 minute ago';
+    if (minutes < 60) return `${minutes} minutes ago`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours === 1) return '1 hour ago';
+    if (hours < 24) return `${hours} hours ago`;
+    
+    const days = Math.floor(hours / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+}
+
+function updateAlertCounts() {
+    const counts = {
+        critical: alertsData.filter(a => a.severity === 'critical').length,
+        high: alertsData.filter(a => a.severity === 'high').length,
+        medium: alertsData.filter(a => a.severity === 'medium').length,
+        low: alertsData.filter(a => a.severity === 'low').length
+    };
+    
+    document.getElementById('critical-count').textContent = counts.critical;
+    document.getElementById('high-count').textContent = counts.high;
+    document.getElementById('medium-count').textContent = counts.medium;
+    document.getElementById('low-count').textContent = counts.low;
+    
+    // Update chart
+    if (aiCharts.alertSummary) {
+        aiCharts.alertSummary.data.datasets[0].data = [
+            counts.critical, counts.high, counts.medium, counts.low
+        ];
+        aiCharts.alertSummary.update();
+    }
+}
+
+function updateAIMetrics() {
+    // Simulate real-time metrics updates
+    setInterval(() => {
+        const processedEl = document.getElementById('processed-today');
+        if (processedEl) {
+            const current = parseInt(processedEl.textContent.replace(',', ''));
+            processedEl.textContent = (current + Math.floor(Math.random() * 5)).toLocaleString();
+        }
+        
+        const anomaliesEl = document.getElementById('anomalies-detected');
+        if (anomaliesEl && Math.random() < 0.1) {
+            const current = parseInt(anomaliesEl.textContent);
+            anomaliesEl.textContent = current + 1;
+        }
+    }, 10000);
+}
+
+function pauseAlerts() {
+    const btn = document.getElementById('pause-alerts-btn');
+    const pauseText = document.getElementById('pause-text');
+    const resumeText = document.getElementById('resume-text');
+    
+    alertsPaused = !alertsPaused;
+    
+    if (alertsPaused) {
+        pauseText.classList.add('hidden');
+        resumeText.classList.remove('hidden');
+    } else {
+        pauseText.classList.remove('hidden');
+        resumeText.classList.add('hidden');
+    }
+}
+
+function filterAlerts() {
+    const filter = document.getElementById('alert-filter').value;
+    
+    if (!filter) {
+        renderAlerts();
+        return;
+    }
+    
+    const filteredAlerts = alertsData.filter(alert => {
+        switch (filter) {
+            case 'high': return alert.severity === 'critical' || alert.severity === 'high';
+            case 'medium': return alert.severity === 'medium';
+            case 'pattern': return alert.type === 'pattern';
+            case 'anomaly': return alert.type === 'anomaly';
+            default: return true;
+        }
+    });
+    
+    const container = document.getElementById('alerts-container');
+    container.innerHTML = filteredAlerts.map(alert => `
+        <div class="alert-item ${alert.severity}" data-id="${alert.id}">
+            <div class="alert-header">
+                <div class="alert-title">${alert.title}</div>
+                <div class="alert-severity ${alert.severity}">${alert.severity.toUpperCase()}</div>
+            </div>
+            <div class="alert-content">${alert.content}</div>
+            <div class="alert-meta">
+                <div class="alert-details">
+                    <span>Score: ${alert.score.toFixed(3)}</span> • 
+                    <span>${alert.company}</span> • 
+                    <span>${alert.tender_id}</span>
+                </div>
+                <div class="alert-time">${getTimeAgo(alert.time)}</div>
+            </div>
+            <div class="alert-actions">
+                <button class="alert-action" onclick="investigateAlert(${alert.id})">Investigate</button>
+                <button class="alert-action" onclick="dismissAlert(${alert.id})">Dismiss</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function loadAnomalyCharts() {
+    createAnomalyDistributionChart();
+    createAnomalyTimelineChart();
+    loadAnomaliesTable();
+}
+
+function createAnomalyDistributionChart() {
+    const ctx = document.getElementById('anomalyDistributionChart');
+    if (!ctx) return;
+    
+    if (aiCharts.anomalyDistribution) {
+        aiCharts.anomalyDistribution.destroy();
+    }
+    
+    const colors = actms.getMonochromeColors();
+    
+    aiCharts.anomalyDistribution = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['0.0-0.2', '0.2-0.4', '0.4-0.6', '0.6-0.8', '0.8-1.0'],
+            datasets: [{
+                label: 'Number of Bids',
+                data: [892, 156, 47, 23, 12],
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                duration: 2000,
+                easing: 'easeOutBounce'
+            }
+        }
+    });
+}
+
+function createAnomalyTimelineChart() {
+    const ctx = document.getElementById('anomalyTimelineChart');
+    if (!ctx) return;
+    
+    if (aiCharts.anomalyTimeline) {
+        aiCharts.anomalyTimeline.destroy();
+    }
+    
+    // Generate sample scatter data
+    const scatterData = [];
+    for (let i = 0; i < 50; i++) {
+        scatterData.push({
+            x: Math.random() * 24,
+            y: Math.random()
+        });
+    }
+    
+    aiCharts.anomalyTimeline = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Anomaly Scores',
+                data: scatterData,
+                backgroundColor: 'rgba(255,255,255,0.6)',
+                borderColor: 'rgba(255,255,255,0.8)',
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            scales: {
+                x: {
+                    ...actms.getChartOptions().scales.x,
+                    title: {
+                        display: true,
+                        text: 'Hours (24h)',
+                        color: '#B3B3B3'
+                    }
+                },
+                y: {
+                    ...actms.getChartOptions().scales.y,
+                    title: {
+                        display: true,
+                        text: 'Anomaly Score',
+                        color: '#B3B3B3'
+                    },
+                    min: 0,
+                    max: 1
+                }
+            }
+        }
+    });
+}
+
+function loadAnomaliesTable() {
+    const tableBody = document.querySelector('#anomalies-table tbody');
+    
+    const sampleData = [
+        ['14:32:15', 'BID-2025-0456', 'TechCorp Solutions', 0.847, 'Price Deviation', 'Investigate'],
+        ['14:28:43', 'BID-2025-0451', 'BuildMax Ltd', 0.782, 'Document Pattern', 'Review'],
+        ['14:15:22', 'BID-2025-0449', 'QuickBid LLC', 0.756, 'Timing Anomaly', 'Flagged'],
+        ['14:08:17', 'BID-2025-0445', 'Global Services', 0.691, 'Company Network', 'Monitor'],
+        ['13:55:33', 'BID-2025-0441', 'Innovation Inc', 0.634, 'Threshold', 'Cleared']
+    ];
+    
+    tableBody.innerHTML = sampleData.map(row => `
+        <tr>
+            <td>${row[0]}</td>
+            <td>${row[1]}</td>
+            <td>${row[2]}</td>
+            <td>
+                <span class="score-badge ${row[3] > 0.8 ? 'score-high' : row[3] > 0.6 ? 'score-medium' : 'score-low'}">
+                    ${row[3]}
+                </span>
+            </td>
+            <td>${row[4]}</td>
+            <td>
+                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                    ${row[5]}
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function loadTrainingCharts() {
+    createModelMetricsChart();
+}
+
+function createModelMetricsChart() {
+    const ctx = document.getElementById('modelMetricsChart');
+    if (!ctx) return;
+    
+    if (aiCharts.modelMetrics) {
+        aiCharts.modelMetrics.destroy();
+    }
+    
+    aiCharts.modelMetrics = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Epoch 1', 'Epoch 20', 'Epoch 40', 'Epoch 60', 'Epoch 80', 'Epoch 100'],
+            datasets: [
+                {
+                    label: 'Training Accuracy',
+                    data: [0.75, 0.85, 0.91, 0.95, 0.97, 0.99],
+                    borderColor: 'rgba(255,255,255,0.9)',
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    fill: false,
+                    tension: 0.4
+                },
+                {
+                    label: 'Validation Accuracy',
+                    data: [0.73, 0.82, 0.88, 0.92, 0.94, 0.96],
+                    borderColor: 'rgba(255,255,255,0.6)',
+                    backgroundColor: 'rgba(255,255,255,0.05)',
+                    fill: false,
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            scales: {
+                ...actms.getChartOptions().scales,
+                y: {
+                    ...actms.getChartOptions().scales.y,
+                    min: 0.7,
+                    max: 1.0
+                }
+            }
+        }
+    });
+}
+
+function loadPatternCharts() {
+    createBidAmountScatterChart();
+    createFeatureImportanceChart();
+}
+
+function createBidAmountScatterChart() {
+    const ctx = document.getElementById('bidAmountScatterChart');
+    if (!ctx) return;
+    
+    if (aiCharts.bidAmountScatter) {
+        aiCharts.bidAmountScatter.destroy();
+    }
+    
+    const scatterData = [];
+    for (let i = 0; i < 100; i++) {
+        const amount = Math.random() * 500000 + 10000;
+        const score = Math.random() * 0.3 + (amount < 50000 ? 0.7 : 0.1);
+        scatterData.push({ x: amount, y: score });
+    }
+    
+    aiCharts.bidAmountScatter = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Bids',
+                data: scatterData,
+                backgroundColor: function(context) {
+                    const value = context.parsed.y;
+                    if (value > 0.8) return 'rgba(255,255,255,0.9)';
+                    if (value > 0.6) return 'rgba(255,255,255,0.7)';
+                    return 'rgba(255,255,255,0.4)';
+                },
+                borderColor: 'rgba(255,255,255,0.8)',
+                pointRadius: 5,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            scales: {
+                x: {
+                    ...actms.getChartOptions().scales.x,
+                    title: {
+                        display: true,
+                        text: 'Bid Amount ($)',
+                        color: '#B3B3B3'
+                    },
+                    type: 'linear'
+                },
+                y: {
+                    ...actms.getChartOptions().scales.y,
+                    title: {
+                        display: true,
+                        text: 'Anomaly Score',
+                        color: '#B3B3B3'
+                    },
+                    min: 0,
+                    max: 1
+                }
+            }
+        }
+    });
+}
+
+function createFeatureImportanceChart() {
+    const ctx = document.getElementById('featureImportanceChart');
+    if (!ctx) return;
+    
+    if (aiCharts.featureImportance) {
+        aiCharts.featureImportance.destroy();
+    }
+    
+    const colors = actms.getMonochromeColors();
+    
+    aiCharts.featureImportance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Bid Amount\nDeviation', 'Proposal\nQuality', 'Company\nHistory', 'Submission\nTiming', 'Geographic\nFactors'],
+            datasets: [{
+                label: 'Importance',
+                data: [0.85, 0.72, 0.68, 0.45, 0.32],
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            indexAxis: 'y',
+            animation: {
+                duration: 2000,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+}
+
+// Action Functions
+function investigateAlert(alertId) {
+    actms.showToast(`Opening investigation for Alert #${alertId}...`, 'info');
+}
+
+function dismissAlert(alertId) {
+    alertsData = alertsData.filter(alert => alert.id !== alertId);
+    renderAlerts();
+    updateAlertCounts();
+    actms.showToast('Alert dismissed', 'info');
+}
+
+function exportAnomalies() {
+    actms.showToast('Exporting anomaly data...', 'info');
+}
+
+function startTraining() {
+    const btn = document.getElementById('train-btn');
+    const progressSection = document.getElementById('training-progress');
+    
+    btn.disabled = true;
+    btn.textContent = 'Training in Progress...';
+    progressSection.style.display = 'block';
+    
+    simulateTraining();
+    
+    actms.showToast('Model training initiated', 'info');
+}
+
+function simulateTraining() {
+    let epoch = 1;
+    let progress = 0;
+    
+    const trainingInterval = setInterval(() => {
+        progress += Math.random() * 5;
+        epoch = Math.ceil(progress);
+        
+        if (progress >= 100) {
+            clearInterval(trainingInterval);
+            completeTraining();
+            return;
+        }
+        
+        document.getElementById('current-epoch').textContent = epoch;
+        document.getElementById('training-percentage').textContent = `${Math.round(progress)}%`;
+        document.getElementById('training-progress-fill').style.width = `${progress}%`;
+        
+        // Update metrics
+        const loss = (0.5 - (progress / 100) * 0.4 + Math.random() * 0.05).toFixed(4);
+        const accuracy = ((85 + (progress / 100) * 13) + Math.random() * 2).toFixed(1);
+        
+        document.getElementById('current-loss').textContent = loss;
+        document.getElementById('current-accuracy').textContent = `${accuracy}%`;
+        
+        // Add log entry
+        addTrainingLog(`[${new Date().toLocaleTimeString()}] Epoch ${epoch} - Loss: ${loss}, Accuracy: ${accuracy}%`);
+        
+    }, 500);
+}
+
+function completeTraining() {
+    const btn = document.getElementById('train-btn');
+    const progressSection = document.getElementById('training-progress');
+    
+    btn.disabled = false;
+    btn.textContent = '🤖 Start Training';
+    progressSection.style.display = 'none';
+    
+    addTrainingLog(`[${new Date().toLocaleTimeString()}] Training completed successfully!`);
+    addTrainingLog(`[${new Date().toLocaleTimeString()}] Model saved as v2.1.4`);
+    
+    actms.showToast('Model training completed successfully!', 'success');
+}
+
+function addTrainingLog(message) {
+    const logsContainer = document.getElementById('training-logs');
+    const logLine = document.createElement('div');
+    logLine.className = 'log-line';
+    logLine.innerHTML = `<span style="color: #90EE90;">${message.match(/\[.*?\]/)[0]}</span> ${message.replace(/\[.*?\]/, '').trim()}`;
+    
+    logsContainer.appendChild(logLine);
+    logsContainer.scrollTop = logsContainer.scrollHeight;
+}
+
+function validateModel() {
+    actms.showToast('Running model validation...', 'info');
+    
+    setTimeout(() => {
+        addTrainingLog(`[${new Date().toLocaleTimeString()}] Model validation completed - Accuracy: 99.2%`);
+        actms.showToast('Model validation completed successfully', 'success');
+    }, 2000);
+}
+
+function exportModel() {
+    actms.showToast('Preparing model export...', 'info');
+}
+
+function clearLogs() {
+    document.getElementById('training-logs').innerHTML = '';
+    actms.showToast('Logs cleared', 'info');
+}
+
+function exportLogs() {
+    actms.showToast('Exporting training logs...', 'info');
+}
+</script>
+{% endblock %}

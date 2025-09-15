@@ -1,0 +1,895 @@
+{% extends "base.html" %}
+
+{% block title %}Tender Management - ACTMS{% endblock %}
+{% block nav_tenders %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header section">
+        <div class="header-content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="text-primary mb-sm">Tender Management</h1>
+                <p class="text-secondary">Create, manage, and analyze tender opportunities</p>
+            </div>
+            
+            <div class="header-controls flex gap-md">
+                <select class="input" id="department-filter" style="min-width: 150px;">
+                    <option value="">All Departments</option>
+                    <option value="infrastructure">Infrastructure</option>
+                    <option value="technology">Technology</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="education">Education</option>
+                    <option value="transport">Transport</option>
+                </select>
+                <button class="btn btn-secondary" onclick="exportTenders()">
+                    {% from 'partials/icons.html' import icon %}
+                    {{ icon('download', 'sm', 'glass') }} Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="upload">Upload New Tender</button>
+            <button class="tab-button" data-tab="view">View Tenders</button>
+            <button class="tab-button" data-tab="analytics">Tender Analytics</button>
+        </div>
+
+        <!-- Upload New Tender Tab -->
+        <div class="tab-content active" data-content="upload">
+            <div class="upload-section">
+                <div class="grid grid-2">
+                    <!-- Form Section -->
+                    <div class="form-section glass-card fade-in">
+                        <h3 class="text-primary mb-lg">Tender Details</h3>
+                        
+                        <form id="tender-form" onsubmit="submitTender(event)">
+                            <div class="input-group">
+                                <label class="input-label">Tender Title *</label>
+                                <input type="text" class="input" name="title" required 
+                                       placeholder="Enter tender title" id="tender-title">
+                            </div>
+
+                            <div class="grid grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Department *</label>
+                                    <select class="select" name="department" required id="tender-department">
+                                        <option value="">Select Department</option>
+                                        <option value="infrastructure">Infrastructure</option>
+                                        <option value="technology">Technology</option>
+                                        <option value="healthcare">Healthcare</option>
+                                        <option value="education">Education</option>
+                                        <option value="transport">Transport</option>
+                                    </select>
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="input-label">Region *</label>
+                                    <select class="select" name="region" required id="tender-region">
+                                        <option value="">Select Region</option>
+                                        <option value="north">North</option>
+                                        <option value="south">South</option>
+                                        <option value="east">East</option>
+                                        <option value="west">West</option>
+                                        <option value="central">Central</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-2">
+                                <div class="input-group">
+                                    <label class="input-label">Budget (₹) *</label>
+                                    <input type="number" class="input" name="budget" required 
+                                           placeholder="0.00" step="0.01" min="0" id="tender-budget">
+                                </div>
+
+                                <div class="input-group">
+                                    <label class="input-label">Deadline *</label>
+                                    <input type="date" class="input" name="deadline" required id="tender-deadline">
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Description</label>
+                                <textarea class="textarea" name="description" rows="4" 
+                                          placeholder="Enter tender description" id="tender-description"></textarea>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Requirements</label>
+                                <textarea class="textarea" name="requirements" rows="4" 
+                                          placeholder="Enter tender requirements" id="tender-requirements"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                                <button type="submit" class="btn btn-primary" id="submit-tender-btn">
+                                    <span id="submit-text">Create Tender</span>
+                                    <span id="submit-loading" class="hidden">Creating...</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="upload-section glass-card fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-primary mb-lg">Attachments</h3>
+                        
+                        <div class="upload-area" id="upload-area" 
+                             ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                            <div class="upload-content">
+                                <div class="upload-icon" style="font-size: 3rem; margin-bottom: 1rem;">📁</div>
+                                <p class="text-primary mb-sm">Drag & drop files here</p>
+                                <p class="text-secondary mb-lg">or click to browse</p>
+                                <input type="file" id="file-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx" style="display: none;">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('file-input').click()">
+                                    Choose Files
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="uploaded-files" id="uploaded-files">
+                            <!-- File list will be populated here -->
+                        </div>
+
+                        <div class="upload-progress" id="upload-progress" style="display: none;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-fill"></div>
+                            </div>
+                            <p class="text-secondary" id="progress-text">Uploading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Tenders Tab -->
+        <div class="tab-content" data-content="view">
+            <div class="tenders-list glass-card fade-in">
+                <div class="list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3 class="text-primary">All Tenders</h3>
+                    
+                    <div class="list-controls flex gap-md">
+                        <div class="filter-chips flex gap-sm">
+                            <button class="filter-chip active" data-status="all" onclick="filterTenders('all')">All</button>
+                            <button class="filter-chip" data-status="active" onclick="filterTenders('active')">Active</button>
+                            <button class="filter-chip" data-status="upcoming" onclick="filterTenders('upcoming')">Upcoming</button>
+                            <button class="filter-chip" data-status="closed" onclick="filterTenders('closed')">Closed</button>
+                        </div>
+                        
+                        <div class="search-box">
+                            <input type="text" class="input" placeholder="Search tenders..." id="search-input" 
+                                   oninput="searchTenders()" style="min-width: 200px;">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="tenders-table" id="tenders-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Department</th>
+                                <th>Budget</th>
+                                <th>Status</th>
+                                <th>Deadline</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="loading-row">
+                                <td colspan="7" class="text-center">Loading tenders...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="pagination" style="display: none; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem;">
+                    <button class="btn btn-secondary" id="prev-page" onclick="changePage(-1)">← Previous</button>
+                    <span class="page-info text-secondary" id="page-info">Page 1 of 1</span>
+                    <button class="btn btn-secondary" id="next-page" onclick="changePage(1)">Next →</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tender Analytics Tab -->
+        <div class="tab-content" data-content="analytics">
+            <div class="analytics-section">
+                <div class="grid grid-2">
+                    <!-- Department Distribution Chart -->
+                    <div class="chart-container glass-card fade-in">
+                        <h3 class="text-primary mb-lg">Tenders by Department</h3>
+                        <div class="chart-wrapper" style="height: 400px; position: relative;">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trends Chart -->
+                    <div class="chart-container glass-card fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-primary mb-lg">Monthly Tender Trends</h3>
+                        <div class="chart-wrapper" style="height: 400px; position: relative;">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="analytics-summary glass-card mt-xl fade-in" style="animation-delay: 0.4s;">
+                    <h3 class="text-primary mb-lg">Analytics Summary</h3>
+                    
+                    <div class="grid grid-4">
+                        <div class="stat-card text-center">
+                            <div class="stat-value text-primary" style="font-size: 2rem; font-weight: bold;" id="avg-tender-value">$0</div>
+                            <div class="stat-label">Average Tender Value</div>
+                        </div>
+                        
+                        <div class="stat-card text-center">
+                            <div class="stat-value text-primary" style="font-size: 2rem; font-weight: bold;" id="completion-rate">0%</div>
+                            <div class="stat-label">Completion Rate</div>
+                        </div>
+                        
+                        <div class="stat-card text-center">
+                            <div class="stat-value text-primary" style="font-size: 2rem; font-weight: bold;" id="avg-bids-per-tender">0</div>
+                            <div class="stat-label">Avg Bids per Tender</div>
+                        </div>
+                        
+                        <div class="stat-card text-center">
+                            <div class="stat-value text-primary" style="font-size: 2rem; font-weight: bold;" id="processing-time">0</div>
+                            <div class="stat-label">Avg Processing Time (days)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Tender-specific styles */
+.upload-area {
+    border: 2px dashed var(--glass-border);
+    border-radius: var(--glass-radius);
+    padding: 3rem;
+    text-align: center;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+    border-color: rgba(255,255,255,0.3);
+    background: var(--glass-hover);
+}
+
+.uploaded-files {
+    margin-top: 1.5rem;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.file-name {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+.file-size {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+}
+
+.file-remove:hover {
+    color: #FF6B6B;
+    background: rgba(255,107,107,0.1);
+}
+
+.progress-bar {
+    background: var(--glass-fill);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-sm);
+}
+
+.progress-fill {
+    background: var(--color-text-primary);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.filter-chips {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.filter-chip {
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    color: var(--color-text-secondary);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-size: 0.875rem;
+}
+
+.filter-chip:hover {
+    background: var(--glass-hover);
+    color: var(--color-text-primary);
+}
+
+.filter-chip.active {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+    border-color: var(--color-text-primary);
+}
+
+.tenders-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tenders-table th,
+.tenders-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.tenders-table th {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    background: var(--glass-hover);
+}
+
+.tenders-table td {
+    color: var(--color-text-secondary);
+}
+
+.tenders-table tr:hover {
+    background: var(--glass-hover);
+    cursor: pointer;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.status-active {
+    background: rgba(144,238,144,0.2);
+    color: #90EE90;
+    border: 1px solid rgba(144,238,144,0.3);
+}
+
+.status-closed {
+    background: rgba(255,255,255,0.1);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--glass-border);
+}
+
+.status-upcoming {
+    background: rgba(255,255,255,0.2);
+    color: var(--color-text-primary);
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .grid-2 {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-content,
+    .list-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .list-controls {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+    
+    .filter-chips {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .tenders-table {
+        font-size: 0.875rem;
+    }
+    
+    .tenders-table th,
+    .tenders-table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let tendersData = [];
+let currentPage = 1;
+let itemsPerPage = 10;
+let filteredTenders = [];
+let uploadedFiles = [];
+let analyticsCharts = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tender-deadline').min = today;
+    
+    // Load tenders data
+    loadTendersData();
+    
+    // Set up file upload
+    setupFileUpload();
+    
+    // Load analytics when tab becomes active
+    const analyticsTab = document.querySelector('[data-tab="analytics"]');
+    if (analyticsTab) {
+        analyticsTab.addEventListener('click', () => {
+            setTimeout(loadAnalytics, 100); // Delay to ensure tab is active
+        });
+    }
+});
+
+function setupFileUpload() {
+    const fileInput = document.getElementById('file-input');
+    const uploadArea = document.getElementById('upload-area');
+    
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+}
+
+function handleFileSelect(event) {
+    const files = event.target.files;
+    processFiles(files);
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+    const files = event.dataTransfer.files;
+    processFiles(files);
+}
+
+function processFiles(files) {
+    const uploadedFilesContainer = document.getElementById('uploaded-files');
+    
+    Array.from(files).forEach(file => {
+        // Validate file
+        if (!validateFile(file)) return;
+        
+        // Add to uploaded files
+        uploadedFiles.push(file);
+        
+        // Create file item
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item fade-in';
+        fileItem.innerHTML = `
+            <div>
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+            </div>
+            <button class="file-remove" onclick="removeFile('${file.name}')">{{ icon('close', 'sm', 'glass') }}</button>
+        `;
+        
+        uploadedFilesContainer.appendChild(fileItem);
+    });
+    
+    // Clear file input
+    document.getElementById('file-input').value = '';
+}
+
+function validateFile(file) {
+    const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ];
+    
+    const maxSize = 15 * 1024 * 1024; // 15MB
+    
+    if (!allowedTypes.includes(file.type)) {
+        actms.showToast('Invalid file type. Please upload PDF, DOC, DOCX, XLS, or XLSX files.', 'error');
+        return false;
+    }
+    
+    if (file.size > maxSize) {
+        actms.showToast('File size too large. Maximum size is 15MB.', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function removeFile(fileName) {
+    uploadedFiles = uploadedFiles.filter(file => file.name !== fileName);
+    
+    const fileItems = document.querySelectorAll('.file-item');
+    fileItems.forEach(item => {
+        const nameElement = item.querySelector('.file-name');
+        if (nameElement && nameElement.textContent === fileName) {
+            item.remove();
+        }
+    });
+}
+
+async function submitTender(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitBtn = document.getElementById('submit-tender-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoading = document.getElementById('submit-loading');
+    
+    // Validate form
+    if (!actms.validateForm(form)) {
+        return;
+    }
+    
+    // Show loading state
+    submitText.classList.add('hidden');
+    submitLoading.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    try {
+        const formData = new FormData(form);
+        const tenderData = {
+            title: formData.get('title'),
+            department: formData.get('department'),
+            region: formData.get('region'),
+            budget: parseFloat(formData.get('budget')),
+            deadline: formData.get('deadline'),
+            description: formData.get('description') || '',
+            requirements: formData.get('requirements') || ''
+        };
+        
+        const result = await actms.createTender(tenderData);
+        
+        actms.showToast('Tender created successfully!', 'success');
+        clearForm();
+        
+        // Reload tenders data
+        loadTendersData();
+        
+    } catch (error) {
+        console.error('Failed to create tender:', error);
+        actms.showToast('Failed to create tender. Please try again.', 'error');
+    } finally {
+        // Reset button state
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+}
+
+function clearForm() {
+    document.getElementById('tender-form').reset();
+    uploadedFiles = [];
+    document.getElementById('uploaded-files').innerHTML = '';
+}
+
+async function loadTendersData() {
+    try {
+        const data = await actms.getTenders();
+        tendersData = data || [];
+        filteredTenders = [...tendersData];
+        
+        renderTendersTable();
+        updatePagination();
+        
+    } catch (error) {
+        console.error('Failed to load tenders:', error);
+        // Use demo data
+        loadDemoTenders();
+    }
+}
+
+function loadDemoTenders() {
+    tendersData = [
+        {
+            id: 1,
+            title: "Road Infrastructure Development",
+            department: "infrastructure",
+            budget: 250000,
+            status: "active",
+            deadline: "2025-10-15",
+            created_at: "2025-09-01"
+        },
+        {
+            id: 2,
+            title: "School IT Equipment Procurement",
+            department: "education",
+            budget: 75000,
+            status: "upcoming",
+            deadline: "2025-11-20",
+            created_at: "2025-09-05"
+        },
+        {
+            id: 3,
+            title: "Hospital Medical Supplies",
+            department: "healthcare",
+            budget: 180000,
+            status: "closed",
+            deadline: "2025-09-10",
+            created_at: "2025-08-15"
+        }
+    ];
+    
+    filteredTenders = [...tendersData];
+    renderTendersTable();
+    updatePagination();
+}
+
+function renderTendersTable() {
+    const tableBody = document.querySelector('#tenders-table tbody');
+    
+    if (filteredTenders.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No tenders found</td></tr>';
+        return;
+    }
+    
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageData = filteredTenders.slice(startIndex, endIndex);
+    
+    tableBody.innerHTML = pageData.map(tender => `
+        <tr onclick="viewTenderDetails(${tender.id})">
+            <td>#${tender.id}</td>
+            <td>${tender.title}</td>
+            <td>${tender.department}</td>
+            <td>${actms.formatCurrency(tender.budget)}</td>
+            <td>
+                <span class="status-badge status-${tender.status}">
+                    ${tender.status.charAt(0).toUpperCase() + tender.status.slice(1)}
+                </span>
+            </td>
+            <td>${actms.formatDate(tender.deadline)}</td>
+            <td>
+                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                        onclick="event.stopPropagation(); editTender(${tender.id})">Edit</button>
+                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; margin-left: 0.5rem;" 
+                        onclick="event.stopPropagation(); viewBids(${tender.id})">Bids</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updatePagination() {
+    const totalPages = Math.ceil(filteredTenders.length / itemsPerPage);
+    const pagination = document.getElementById('pagination');
+    const pageInfo = document.getElementById('page-info');
+    const prevBtn = document.getElementById('prev-page');
+    const nextBtn = document.getElementById('next-page');
+    
+    if (totalPages <= 1) {
+        pagination.style.display = 'none';
+        return;
+    }
+    
+    pagination.style.display = 'flex';
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+}
+
+function changePage(direction) {
+    const totalPages = Math.ceil(filteredTenders.length / itemsPerPage);
+    const newPage = currentPage + direction;
+    
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        renderTendersTable();
+        updatePagination();
+    }
+}
+
+function filterTenders(status) {
+    // Update active filter chip
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.classList.remove('active');
+    });
+    document.querySelector(`[data-status="${status}"]`).classList.add('active');
+    
+    // Filter data
+    if (status === 'all') {
+        filteredTenders = [...tendersData];
+    } else {
+        filteredTenders = tendersData.filter(tender => tender.status === status);
+    }
+    
+    currentPage = 1;
+    renderTendersTable();
+    updatePagination();
+}
+
+function searchTenders() {
+    const query = document.getElementById('search-input').value.toLowerCase();
+    
+    if (!query) {
+        filteredTenders = [...tendersData];
+    } else {
+        filteredTenders = tendersData.filter(tender => 
+            tender.title.toLowerCase().includes(query) ||
+            tender.department.toLowerCase().includes(query)
+        );
+    }
+    
+    currentPage = 1;
+    renderTendersTable();
+    updatePagination();
+}
+
+function loadAnalytics() {
+    createDepartmentChart();
+    createMonthlyChart();
+    updateAnalyticsSummary();
+}
+
+function createDepartmentChart() {
+    const ctx = document.getElementById('departmentChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (analyticsCharts.department) {
+        analyticsCharts.department.destroy();
+    }
+    
+    // Calculate department distribution
+    const departmentCount = {};
+    tendersData.forEach(tender => {
+        departmentCount[tender.department] = (departmentCount[tender.department] || 0) + 1;
+    });
+    
+    const colors = actms.getMonochromeColors();
+    
+    analyticsCharts.department = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: Object.keys(departmentCount),
+            datasets: [{
+                data: Object.values(departmentCount),
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                animateRotate: true,
+                duration: 1500
+            }
+        }
+    });
+}
+
+function createMonthlyChart() {
+    const ctx = document.getElementById('monthlyChart');
+    if (!ctx) return;
+    
+    if (analyticsCharts.monthly) {
+        analyticsCharts.monthly.destroy();
+    }
+    
+    // Generate monthly data (demo)
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    const values = [12, 19, 8, 15, 22, 13];
+    
+    analyticsCharts.monthly = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Tenders',
+                data: values,
+                backgroundColor: actms.getMonochromeColors()[0],
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                duration: 2000,
+                easing: 'easeOutBounce'
+            }
+        }
+    });
+}
+
+function updateAnalyticsSummary() {
+    // Calculate summary stats
+    const totalValue = tendersData.reduce((sum, tender) => sum + (tender.budget || 0), 0);
+    const avgValue = totalValue / (tendersData.length || 1);
+    
+    document.getElementById('avg-tender-value').textContent = actms.formatCurrency(avgValue);
+    document.getElementById('completion-rate').textContent = '87%';
+    document.getElementById('avg-bids-per-tender').textContent = '4.2';
+    document.getElementById('processing-time').textContent = '12';
+}
+
+// Event handlers
+function viewTenderDetails(tenderId) {
+    actms.showToast(`Loading details for tender #${tenderId}...`, 'info');
+}
+
+function editTender(tenderId) {
+    actms.showToast(`Edit functionality for tender #${tenderId} coming soon...`, 'info');
+}
+
+function viewBids(tenderId) {
+    actms.showToast(`Loading bids for tender #${tenderId}...`, 'info');
+}
+
+function exportTenders() {
+    actms.showToast('Exporting tender data...', 'info');
+    // Implement export functionality
+}
+</script>
+{% endblock %}

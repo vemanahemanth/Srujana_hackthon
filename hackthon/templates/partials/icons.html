@@ -1,0 +1,19 @@
+{# Icon macro for rendering SVG icons with glassmorphism styling #}
+{% macro icon(name, size='md', variant='default', class='') %}
+<svg class="icon icon-{{ size }} icon-{{ variant }} {{ class }}" aria-hidden="true">
+  <use href="/static/icons/icons.svg#{{ name }}"></use>
+</svg>
+{% endmacro %}
+
+{# Glass icon wrapper macro - combines glassmorphism container with SVG icon #}
+{% macro glass_icon(name, size='md', variant='glass', container_class='', icon_class='', float=false, pulse=false, status='', style='') %}
+{% set container_classes = 'glass-icon glass-icon-' + size %}
+{% if container_class %}{% set container_classes = container_classes + ' ' + container_class %}{% endif %}
+{% if variant == 'glass' %}{% set container_classes = container_classes + ' glass-icon-glow' %}{% endif %}
+{% if float %}{% set container_classes = container_classes + ' glass-icon-float' %}{% endif %}
+{% if pulse %}{% set container_classes = container_classes + ' glass-icon-pulse' %}{% endif %}
+{% if status %}{% set container_classes = container_classes + ' glass-icon-' + status %}{% endif %}
+<div class="{{ container_classes }}" {% if style %}style="{{ style }}"{% endif %}>
+  {{ icon(name, size, 'glass', icon_class) }}
+</div>
+{% endmacro %}

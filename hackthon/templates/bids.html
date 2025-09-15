@@ -1,0 +1,1515 @@
+{% extends "base.html" %}
+
+{% block title %}Bid Submission - ACTMS{% endblock %}
+{% block nav_bids %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header section">
+        <div class="header-content text-center">
+            <h1 class="text-primary mb-sm">Bid Submission</h1>
+            <p class="text-secondary">Submit your proposal through our secure, step-by-step process</p>
+        </div>
+    </div>
+
+    <!-- Progress Wizard -->
+    <div class="wizard-container glass-card">
+        <div class="wizard-progress">
+            <div class="progress-pills">
+                <div class="progress-pill active" data-step="1">
+                    <div class="pill-number">1</div>
+                    <div class="pill-label">Select Tender</div>
+                </div>
+                <div class="progress-line"></div>
+                
+                <div class="progress-pill" data-step="2">
+                    <div class="pill-number">2</div>
+                    <div class="pill-label">Company Info</div>
+                </div>
+                <div class="progress-line"></div>
+                
+                <div class="progress-pill" data-step="3">
+                    <div class="pill-number">3</div>
+                    <div class="pill-label">Bid Details</div>
+                </div>
+                <div class="progress-line"></div>
+                
+                <div class="progress-pill" data-step="4">
+                    <div class="pill-number">4</div>
+                    <div class="pill-label">Upload Proposal</div>
+                </div>
+                <div class="progress-line"></div>
+                
+                <div class="progress-pill" data-step="5">
+                    <div class="pill-number">5</div>
+                    <div class="pill-label">Review & Submit</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 1: Select Tender -->
+        <div class="wizard-step active" data-step="1">
+            <div class="step-content">
+                <h3 class="text-primary text-center mb-xl">Select a Tender</h3>
+                
+                <div class="tender-search mb-lg">
+                    <input type="text" class="input" placeholder="Search for tenders..." 
+                           id="tender-search" oninput="searchAvailableTenders()">
+                </div>
+
+                <div class="tender-filters mb-lg">
+                    <div class="filter-row">
+                        <select class="select" id="department-filter" onchange="filterTenders()">
+                            <option value="">All Departments</option>
+                            <option value="infrastructure">Infrastructure</option>
+                            <option value="technology">Technology</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="education">Education</option>
+                            <option value="transport">Transport</option>
+                        </select>
+
+                        <select class="select" id="budget-filter" onchange="filterTenders()">
+                            <option value="">All Budgets</option>
+                            <option value="0-50000">Under ₹50,000</option>
+                            <option value="50000-100000">₹50,000 - ₹1,00,000</option>
+                            <option value="100000-500000">₹1,00,000 - ₹5,00,000</option>
+                            <option value="500000+">Over ₹5,00,000</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="tenders-grid" id="available-tenders">
+                    <div class="loading-placeholder text-center">
+                        <div class="loading-spinner" style="width: 40px; height: 40px; border: 3px solid var(--glass-border); border-top: 3px solid var(--color-text-primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                        <p class="text-secondary">Loading available tenders...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-actions">
+                <button class="btn btn-secondary" disabled>Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()" id="step1-next" disabled>Next</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Company Info -->
+        <div class="wizard-step" data-step="2">
+            <div class="step-content">
+                <h3 class="text-primary text-center mb-xl">Company Information</h3>
+                
+                <form id="company-form" class="wizard-form">
+                    <div class="grid grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Company Name *</label>
+                            <input type="text" class="input" name="company_name" required 
+                                   placeholder="Enter company name" id="company-name">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Registration Number *</label>
+                            <input type="text" class="input" name="registration_number" required 
+                                   placeholder="Enter registration number" id="registration-number">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Contact Email *</label>
+                            <input type="email" class="input" name="contact_email" required 
+                                   placeholder="contact@company.com" id="contact-email">
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Mobile Number</label>
+                            <input type="tel" class="input" name="phone_number" 
+                                   placeholder="+91-98765-43210" id="phone-number"
+                                   onblur="validateMobileNumber()" oninput="formatMobileOnInput()">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Company Address *</label>
+                        <textarea class="textarea" name="address" required rows="3" 
+                                  placeholder="Enter complete address" id="company-address"></textarea>
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Industry *</label>
+                            <select class="select" name="industry" required id="company-industry">
+                                <option value="">Select Industry</option>
+                                <option value="construction">Construction</option>
+                                <option value="technology">Technology</option>
+                                <option value="healthcare">Healthcare</option>
+                                <option value="education">Education</option>
+                                <option value="manufacturing">Manufacturing</option>
+                                <option value="consulting">Consulting</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Years in Business *</label>
+                            <input type="number" class="input" name="years_in_business" required 
+                                   min="0" placeholder="0" id="years-business">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="step-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()" id="step2-next">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Bid Details -->
+        <div class="wizard-step" data-step="3">
+            <div class="step-content">
+                <h3 class="text-primary text-center mb-xl">Bid Details</h3>
+                
+                <form id="bid-form" class="wizard-form">
+                    <div class="selected-tender-info glass-card mb-xl" id="selected-tender-info">
+                        <!-- Tender info will be populated here -->
+                    </div>
+
+                    <div class="grid grid-2">
+                        <div class="input-group">
+                            <label class="input-label">Bid Amount (₹) *</label>
+                            <input type="number" class="input" name="bid_amount" required 
+                                   step="0.01" min="0" placeholder="0.00" id="bid-amount">
+                            <small class="text-secondary">Enter your proposed amount for this tender</small>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Completion Timeline *</label>
+                            <select class="select" name="completion_timeline" required id="completion-timeline">
+                                <option value="">Select Timeline</option>
+                                <option value="1-2 weeks">1-2 weeks</option>
+                                <option value="1 month">1 month</option>
+                                <option value="2-3 months">2-3 months</option>
+                                <option value="3-6 months">3-6 months</option>
+                                <option value="6+ months">6+ months</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Proposal Summary *</label>
+                        <textarea class="textarea" name="proposal_text" required rows="6" 
+                                  placeholder="Provide a detailed description of your proposal..." id="proposal-text"></textarea>
+                        <small class="text-secondary">Describe your approach, methodology, and key deliverables</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Key Personnel</label>
+                        <textarea class="textarea" name="key_personnel" rows="3" 
+                                  placeholder="List key team members and their roles..." id="key-personnel"></textarea>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Previous Experience</label>
+                        <textarea class="textarea" name="experience" rows="3" 
+                                  placeholder="Describe relevant previous projects or experience..." id="experience"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <div class="step-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()" id="step3-next">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Upload Proposal -->
+        <div class="wizard-step" data-step="4">
+            <div class="step-content">
+                <h3 class="text-primary text-center mb-xl">Upload Supporting Documents</h3>
+                
+                <div class="upload-section">
+                    <div class="upload-area glass-card" id="proposal-upload-area" 
+                         ondrop="handleProposalDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                        <div class="upload-content text-center">
+                            {% from 'partials/icons.html' import glass_icon %}
+                            {{ glass_icon('file', 'xl', 'glass', float=True, style='margin-bottom: 1.5rem;') }}
+                            <h4 class="text-primary mb-md">Drag & Drop Your Proposal Documents</h4>
+                            <p class="text-secondary mb-lg">or click to browse files</p>
+                            <input type="file" id="proposal-files" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" style="display: none;">
+                            <button type="button" class="btn btn-primary" onclick="document.getElementById('proposal-files').click()">
+                                Choose Files
+                            </button>
+                            <p class="text-secondary mt-md" style="font-size: 0.875rem;">
+                                Supported formats: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX<br>
+                                Maximum file size: 15MB per file
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="uploaded-documents mt-xl" id="uploaded-documents">
+                        <!-- Uploaded files will be listed here -->
+                    </div>
+
+                    <div class="upload-progress" id="upload-progress" style="display: none;">
+                        <div class="progress-info mb-md">
+                            <span class="text-primary">Uploading documents...</span>
+                            <span class="text-secondary" id="upload-percentage">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="upload-progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="document-requirements glass-card mt-xl">
+                        <h4 class="text-primary mb-md">Required Documents:</h4>
+                        <ul class="requirement-list">
+                            <li class="text-secondary">✓ Technical proposal (PDF recommended)</li>
+                            <li class="text-secondary">✓ Company profile and certifications</li>
+                            <li class="text-secondary">✓ Financial statements (last 2 years)</li>
+                            <li class="text-secondary">• Portfolio or case studies (optional)</li>
+                            <li class="text-secondary">• Additional supporting documents (optional)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Previous</button>
+                <button class="btn btn-primary" onclick="nextStep()" id="step4-next">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 5: Review & Submit -->
+        <div class="wizard-step" data-step="5">
+            <div class="step-content">
+                <h3 class="text-primary text-center mb-xl">Review & Submit Your Bid</h3>
+                
+                <div class="review-sections">
+                    <div class="review-section glass-card mb-lg">
+                        <h4 class="text-primary mb-md">Selected Tender</h4>
+                        <div id="review-tender-info">
+                            <!-- Tender info will be populated -->
+                        </div>
+                    </div>
+
+                    <div class="review-section glass-card mb-lg">
+                        <h4 class="text-primary mb-md">Company Information</h4>
+                        <div id="review-company-info">
+                            <!-- Company info will be populated -->
+                        </div>
+                    </div>
+
+                    <div class="review-section glass-card mb-lg">
+                        <h4 class="text-primary mb-md">Bid Details</h4>
+                        <div id="review-bid-info">
+                            <!-- Bid info will be populated -->
+                        </div>
+                    </div>
+
+                    <div class="review-section glass-card mb-lg">
+                        <h4 class="text-primary mb-md">Uploaded Documents</h4>
+                        <div id="review-documents">
+                            <!-- Documents will be populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submission-agreement glass-card">
+                    <div class="agreement-content">
+                        <h4 class="text-primary mb-md">Terms & Conditions</h4>
+                        <div class="agreement-text" style="max-height: 200px; overflow-y: auto; background: var(--glass-fill); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <p class="text-secondary mb-md">
+                                By submitting this bid, you acknowledge and agree to the following terms:
+                            </p>
+                            <ul class="text-secondary" style="padding-left: 1.5rem;">
+                                <li>All information provided is accurate and truthful</li>
+                                <li>You have the capability to fulfill the tender requirements</li>
+                                <li>Your bid remains valid for 30 days from submission</li>
+                                <li>You agree to provide additional documentation if requested</li>
+                                <li>You understand that false information may disqualify your bid</li>
+                                <li>All submitted documents become part of the evaluation process</li>
+                            </ul>
+                        </div>
+
+                        <div class="agreement-checkbox">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="terms-agreement" required>
+                                <span class="checkmark"></span>
+                                <span class="text-primary">I agree to the terms and conditions and confirm all information is accurate</span>
+                            </label>
+                        </div>
+
+                        <div class="digital-signature mt-lg">
+                            <div class="input-group">
+                                <label class="input-label">Digital Signature (Type your full name) *</label>
+                                <input type="text" class="input" id="digital-signature" required 
+                                       placeholder="Type your full name as digital signature">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step-actions">
+                <button class="btn btn-secondary" onclick="previousStep()">Previous</button>
+                <button class="btn btn-primary" onclick="submitBid()" id="submit-bid-btn">
+                    <span id="submit-text">Submit Bid</span>
+                    <span id="submit-loading" class="hidden">Submitting...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="success-modal" style="display: none;">
+    <div class="modal-content glass-card">
+        <div class="modal-body text-center">
+            <div class="success-animation">
+                <div class="checkmark-circle">
+                    <div class="checkmark"></div>
+                </div>
+            </div>
+            
+            <h3 class="text-primary mb-md">Bid Submitted Successfully!</h3>
+            <p class="text-secondary mb-lg">
+                Your bid has been submitted and is now under review. You will receive updates via email.
+            </p>
+            
+            <div class="submission-details glass-card mb-lg">
+                <div class="detail-row">
+                    <span>Bid ID:</span>
+                    <span class="text-primary" id="submission-id">#BID-2025-0001</span>
+                </div>
+                <div class="detail-row">
+                    <span>Submission Time:</span>
+                    <span class="text-primary" id="submission-time">-</span>
+                </div>
+                <div class="detail-row">
+                    <span>Status:</span>
+                    <span class="text-primary">Under Review</span>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeSuccessModal()">Close</button>
+                <button class="btn btn-secondary" onclick="submitAnotherBid()">Submit Another Bid</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Wizard Styles */
+.wizard-container {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.wizard-progress {
+    margin-bottom: 3rem;
+}
+
+.progress-pills {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.progress-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.5;
+    transition: all var(--transition-base);
+    min-width: 80px;
+}
+
+.progress-pill.active,
+.progress-pill.completed {
+    opacity: 1;
+}
+
+.pill-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--glass-fill);
+    border: 2px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-bold);
+    transition: all var(--transition-base);
+}
+
+.progress-pill.active .pill-number {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+    border-color: var(--color-text-primary);
+}
+
+.progress-pill.completed .pill-number {
+    background: var(--color-text-primary);
+    color: var(--color-bg-start);
+    border-color: var(--color-text-primary);
+}
+
+.pill-label {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.progress-pill.active .pill-label,
+.progress-pill.completed .pill-label {
+    color: var(--color-text-primary);
+}
+
+.progress-line {
+    width: 60px;
+    height: 2px;
+    background: var(--glass-border);
+    margin: 0 0.5rem;
+    transition: all var(--transition-base);
+}
+
+.progress-line.completed {
+    background: var(--color-text-primary);
+}
+
+.wizard-step {
+    display: none;
+    min-height: 400px;
+}
+
+.wizard-step.active {
+    display: block;
+    animation: slideIn 0.3s ease-in-out;
+}
+
+.step-content {
+    margin-bottom: 3rem;
+}
+
+.step-actions {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 2rem;
+    border-top: 1px solid var(--glass-border);
+}
+
+.wizard-form .grid {
+    margin-bottom: 1.5rem;
+}
+
+/* Tender Selection */
+.tender-search {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.tenders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.tender-card {
+    background: var(--glass-fill);
+    border: 2px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.tender-card:hover {
+    border-color: rgba(255,255,255,0.2);
+    background: var(--glass-hover);
+}
+
+.tender-card.selected {
+    border-color: var(--color-text-primary);
+    background: var(--glass-hover);
+}
+
+.tender-title {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: 0.5rem;
+}
+
+.tender-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.tender-department {
+    background: var(--glass-hover);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    color: var(--color-text-primary);
+}
+
+.tender-budget {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+.tender-description {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+/* Upload Area */
+.upload-area {
+    border: 2px dashed var(--glass-border);
+    border-radius: var(--glass-radius);
+    padding: 3rem 1.5rem;
+    text-align: center;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+    border-color: rgba(255,255,255,0.3);
+    background: var(--glass-hover);
+}
+
+.document-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--glass-fill);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+}
+
+.document-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.document-icon {
+    font-size: 1.5rem;
+}
+
+.document-name {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+.document-size {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Progress Bar */
+.progress-bar {
+    background: var(--glass-fill);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,1));
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Review Section */
+.review-section {
+    margin-bottom: 1.5rem;
+}
+
+.review-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-label {
+    color: var(--color-text-secondary);
+}
+
+.review-value {
+    color: var(--color-text-primary);
+    text-align: right;
+    max-width: 60%;
+}
+
+/* Agreement */
+.checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.checkbox-container input {
+    display: none;
+}
+
+.checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--glass-border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-base);
+    flex-shrink: 0;
+}
+
+.checkbox-container input:checked + .checkmark {
+    background: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+}
+
+.checkbox-container input:checked + .checkmark::after {
+    content: '✓';
+    color: var(--color-bg-start);
+    font-weight: bold;
+    font-size: 0.75rem;
+}
+
+/* Success Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    max-width: 500px;
+    width: 90%;
+    padding: 2rem;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.success-animation {
+    margin-bottom: 2rem;
+}
+
+.checkmark-circle {
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--color-text-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: checkmarkCircle 0.6s ease-in-out;
+}
+
+@keyframes checkmarkCircle {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+.checkmark-circle .checkmark {
+    width: 30px;
+    height: 30px;
+    color: var(--color-text-primary);
+    font-size: 2rem;
+    font-weight: bold;
+    animation: checkmarkAppear 0.3s ease-in-out 0.6s both;
+}
+
+@keyframes checkmarkAppear {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+/* Loading Animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.requirement-list {
+    list-style: none;
+    padding: 0;
+}
+
+.requirement-list li {
+    padding: 0.25rem 0;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .progress-pills {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .progress-line {
+        width: 2px;
+        height: 30px;
+        margin: 0;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .tenders-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .step-actions {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .review-item {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .review-value {
+        max-width: 100%;
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .wizard-container {
+        padding: 1rem;
+    }
+    
+    .progress-pill {
+        min-width: 60px;
+    }
+    
+    .pill-number {
+        width: 30px;
+        height: 30px;
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentStep = 1;
+let selectedTender = null;
+let availableTenders = [];
+let proposalFiles = [];
+let wizardData = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    setupWizard();
+    loadAvailableTenders();
+    setupFileUpload();
+});
+
+function setupWizard() {
+    // Initialize wizard data
+    wizardData = {
+        tender: {},
+        company: {},
+        bid: {},
+        documents: []
+    };
+}
+
+function setupFileUpload() {
+    const fileInput = document.getElementById('proposal-files');
+    fileInput.addEventListener('change', handleProposalFiles);
+}
+
+async function loadAvailableTenders() {
+    try {
+        const tenders = await actms.getTenders();
+        availableTenders = tenders.filter(tender => tender.status === 'active') || [];
+        renderAvailableTenders();
+    } catch (error) {
+        console.error('Failed to load tenders:', error);
+        loadDemoTenders();
+    }
+}
+
+function loadDemoTenders() {
+    availableTenders = [
+        {
+            id: 1,
+            title: "Road Infrastructure Development Project",
+            department: "infrastructure",
+            budget: 250000,
+            deadline: "2025-11-15",
+            description: "Development of new road infrastructure in the central district including drainage and lighting systems."
+        },
+        {
+            id: 2,
+            title: "School IT Equipment Procurement",
+            department: "education", 
+            budget: 75000,
+            deadline: "2025-12-01",
+            description: "Procurement of computers, tablets, and networking equipment for 3 primary schools."
+        },
+        {
+            id: 3,
+            title: "Hospital Medical Equipment Upgrade",
+            department: "healthcare",
+            budget: 180000,
+            deadline: "2025-10-30",
+            description: "Upgrade of diagnostic equipment and patient monitoring systems for regional hospital."
+        }
+    ];
+    
+    renderAvailableTenders();
+}
+
+function renderAvailableTenders() {
+    const container = document.getElementById('available-tenders');
+    
+    if (availableTenders.length === 0) {
+        container.innerHTML = `
+            <div class="text-center">
+                <p class="text-secondary">No active tenders available at the moment.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = availableTenders.map(tender => `
+        <div class="tender-card" onclick="selectTender(${tender.id})">
+            <h4 class="tender-title">${tender.title}</h4>
+            <div class="tender-meta">
+                <span class="tender-department">${tender.department}</span>
+                <span class="tender-budget">${actms.formatCurrency(tender.budget)}</span>
+            </div>
+            <p class="tender-description">${tender.description}</p>
+            <div class="tender-deadline" style="margin-top: 1rem; color: var(--color-text-secondary); font-size: 0.875rem;">
+                Deadline: ${actms.formatDate(tender.deadline)}
+            </div>
+        </div>
+    `).join('');
+}
+
+function selectTender(tenderId) {
+    // Remove previous selection
+    document.querySelectorAll('.tender-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Select new tender
+    event.currentTarget.classList.add('selected');
+    selectedTender = availableTenders.find(t => t.id === tenderId);
+    wizardData.tender = selectedTender;
+    
+    // Enable next button
+    document.getElementById('step1-next').disabled = false;
+}
+
+function searchAvailableTenders() {
+    const query = document.getElementById('tender-search').value.toLowerCase();
+    filterAndRenderTenders();
+}
+
+function filterTenders() {
+    filterAndRenderTenders();
+}
+
+function filterAndRenderTenders() {
+    const searchQuery = document.getElementById('tender-search').value.toLowerCase();
+    const department = document.getElementById('department-filter').value;
+    const budgetRange = document.getElementById('budget-filter').value;
+    
+    let filtered = [...availableTenders];
+    
+    if (searchQuery) {
+        filtered = filtered.filter(tender => 
+            tender.title.toLowerCase().includes(searchQuery) ||
+            tender.description.toLowerCase().includes(searchQuery)
+        );
+    }
+    
+    if (department) {
+        filtered = filtered.filter(tender => tender.department === department);
+    }
+    
+    if (budgetRange) {
+        const [min, max] = budgetRange.split('-').map(n => n === '+' ? Infinity : parseInt(n.replace('+', '')));
+        filtered = filtered.filter(tender => {
+            if (max) {
+                return tender.budget >= min && tender.budget <= max;
+            } else {
+                return tender.budget >= min;
+            }
+        });
+    }
+    
+    const container = document.getElementById('available-tenders');
+    container.innerHTML = filtered.map(tender => `
+        <div class="tender-card ${selectedTender && selectedTender.id === tender.id ? 'selected' : ''}" onclick="selectTender(${tender.id})">
+            <h4 class="tender-title">${tender.title}</h4>
+            <div class="tender-meta">
+                <span class="tender-department">${tender.department}</span>
+                <span class="tender-budget">${actms.formatCurrency(tender.budget)}</span>
+            </div>
+            <p class="tender-description">${tender.description}</p>
+            <div class="tender-deadline" style="margin-top: 1rem; color: var(--color-text-secondary); font-size: 0.875rem;">
+                Deadline: ${actms.formatDate(tender.deadline)}
+            </div>
+        </div>
+    `).join('');
+}
+
+function nextStep() {
+    if (!validateCurrentStep()) {
+        return;
+    }
+    
+    saveCurrentStepData();
+    
+    if (currentStep < 5) {
+        currentStep++;
+        updateWizardDisplay();
+        
+        if (currentStep === 3) {
+            populateSelectedTenderInfo();
+        } else if (currentStep === 5) {
+            populateReviewData();
+        }
+    }
+}
+
+function previousStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        updateWizardDisplay();
+    }
+}
+
+function validateCurrentStep() {
+    switch (currentStep) {
+        case 1:
+            if (!selectedTender) {
+                actms.showToast('Please select a tender to proceed', 'error');
+                return false;
+            }
+            break;
+            
+        case 2:
+            const companyForm = document.getElementById('company-form');
+            if (!actms.validateForm(companyForm)) {
+                return false;
+            }
+            break;
+            
+        case 3:
+            const bidForm = document.getElementById('bid-form');
+            if (!actms.validateForm(bidForm)) {
+                return false;
+            }
+            break;
+            
+        case 4:
+            if (proposalFiles.length === 0) {
+                actms.showToast('Please upload at least one supporting document', 'error');
+                return false;
+            }
+            break;
+            
+        case 5:
+            const termsAccepted = document.getElementById('terms-agreement').checked;
+            const signature = document.getElementById('digital-signature').value.trim();
+            
+            if (!termsAccepted) {
+                actms.showToast('Please accept the terms and conditions', 'error');
+                return false;
+            }
+            
+            if (!signature) {
+                actms.showToast('Please provide your digital signature', 'error');
+                return false;
+            }
+            break;
+    }
+    
+    return true;
+}
+
+function saveCurrentStepData() {
+    switch (currentStep) {
+        case 1:
+            wizardData.tender = selectedTender;
+            break;
+            
+        case 2:
+            const companyForm = document.getElementById('company-form');
+            const companyData = new FormData(companyForm);
+            wizardData.company = {
+                name: companyData.get('company_name'),
+                registration_number: companyData.get('registration_number'),
+                email: companyData.get('contact_email'),
+                phone: companyData.get('phone_number'),
+                address: companyData.get('address'),
+                industry: companyData.get('industry'),
+                years_in_business: companyData.get('years_in_business')
+            };
+            break;
+            
+        case 3:
+            const bidForm = document.getElementById('bid-form');
+            const bidData = new FormData(bidForm);
+            wizardData.bid = {
+                amount: bidData.get('bid_amount'),
+                timeline: bidData.get('completion_timeline'),
+                proposal_text: bidData.get('proposal_text'),
+                key_personnel: bidData.get('key_personnel'),
+                experience: bidData.get('experience')
+            };
+            break;
+            
+        case 4:
+            wizardData.documents = [...proposalFiles];
+            break;
+    }
+}
+
+function updateWizardDisplay() {
+    // Update progress pills
+    document.querySelectorAll('.progress-pill').forEach((pill, index) => {
+        pill.classList.remove('active', 'completed');
+        
+        if (index + 1 === currentStep) {
+            pill.classList.add('active');
+        } else if (index + 1 < currentStep) {
+            pill.classList.add('completed');
+        }
+    });
+    
+    // Update progress lines
+    document.querySelectorAll('.progress-line').forEach((line, index) => {
+        line.classList.remove('completed');
+        
+        if (index < currentStep - 1) {
+            line.classList.add('completed');
+        }
+    });
+    
+    // Show/hide steps
+    document.querySelectorAll('.wizard-step').forEach((step, index) => {
+        step.classList.remove('active');
+        
+        if (index + 1 === currentStep) {
+            step.classList.add('active');
+        }
+    });
+    
+    // Scroll to top of wizard
+    document.querySelector('.wizard-container').scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+function populateSelectedTenderInfo() {
+    const infoContainer = document.getElementById('selected-tender-info');
+    
+    infoContainer.innerHTML = `
+        <h4 class="text-primary mb-md">${wizardData.tender.title}</h4>
+        <div class="grid grid-2">
+            <div>
+                <strong>Department:</strong> ${wizardData.tender.department}<br>
+                <strong>Budget:</strong> ${actms.formatCurrency(wizardData.tender.budget)}<br>
+            </div>
+            <div>
+                <strong>Deadline:</strong> ${actms.formatDate(wizardData.tender.deadline)}<br>
+            </div>
+        </div>
+        <div style="margin-top: 1rem;">
+            <strong>Description:</strong><br>
+            ${wizardData.tender.description}
+        </div>
+    `;
+}
+
+function handleProposalFiles(event) {
+    const files = Array.from(event.target.files);
+    processProposalFiles(files);
+}
+
+function handleProposalDrop(event) {
+    event.preventDefault();
+    event.currentTarget.classList.remove('drag-over');
+    
+    const files = Array.from(event.dataTransfer.files);
+    processProposalFiles(files);
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over');
+}
+
+function processProposalFiles(files) {
+    const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    ];
+    
+    const maxSize = 15 * 1024 * 1024; // 15MB
+    
+    files.forEach(file => {
+        if (!allowedTypes.includes(file.type)) {
+            actms.showToast(`${file.name}: Invalid file type`, 'error');
+            return;
+        }
+        
+        if (file.size > maxSize) {
+            actms.showToast(`${file.name}: File too large (max 15MB)`, 'error');
+            return;
+        }
+        
+        proposalFiles.push(file);
+    });
+    
+    renderUploadedDocuments();
+    
+    // Clear file input
+    document.getElementById('proposal-files').value = '';
+}
+
+function renderUploadedDocuments() {
+    const container = document.getElementById('uploaded-documents');
+    
+    if (proposalFiles.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = `
+        <h4 class="text-primary mb-md">Uploaded Documents (${proposalFiles.length})</h4>
+        ${proposalFiles.map((file, index) => `
+            <div class="document-item">
+                <div class="document-info">
+                    <div class="document-icon">${getFileIcon(file.type)}</div>
+                    <div>
+                        <div class="document-name">${file.name}</div>
+                        <div class="document-size">${formatFileSize(file.size)}</div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                        onclick="removeProposalFile(${index})">Remove</button>
+            </div>
+        `).join('')}
+    `;
+}
+
+function getFileIcon(fileType) {
+    if (fileType.includes('pdf')) return '📄';
+    if (fileType.includes('word')) return 'DOC';
+    if (fileType.includes('excel') || fileType.includes('sheet')) return '📊';
+    if (fileType.includes('powerpoint') || fileType.includes('presentation')) return '📋';
+    return '📁';
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function removeProposalFile(index) {
+    proposalFiles.splice(index, 1);
+    renderUploadedDocuments();
+}
+
+function populateReviewData() {
+    // Populate review sections
+    document.getElementById('review-tender-info').innerHTML = `
+        <div class="review-item">
+            <span class="review-label">Tender:</span>
+            <span class="review-value">${wizardData.tender.title}</span>
+        </div>
+        <div class="review-item">
+            <span class="review-label">Department:</span>
+            <span class="review-value">${wizardData.tender.department}</span>
+        </div>
+        <div class="review-item">
+            <span class="review-label">Budget:</span>
+            <span class="review-value">${actms.formatCurrency(wizardData.tender.budget)}</span>
+        </div>
+    `;
+    
+    document.getElementById('review-company-info').innerHTML = `
+        <div class="review-item">
+            <span class="review-label">Company:</span>
+            <span class="review-value">${wizardData.company.name}</span>
+        </div>
+        <div class="review-item">
+            <span class="review-label">Email:</span>
+            <span class="review-value">${wizardData.company.email}</span>
+        </div>
+        <div class="review-item">
+            <span class="review-label">Industry:</span>
+            <span class="review-value">${wizardData.company.industry}</span>
+        </div>
+    `;
+    
+    document.getElementById('review-bid-info').innerHTML = `
+        <div class="review-item">
+            <span class="review-label">Bid Amount:</span>
+            <span class="review-value">${actms.formatCurrency(wizardData.bid.amount)}</span>
+        </div>
+        <div class="review-item">
+            <span class="review-label">Timeline:</span>
+            <span class="review-value">${wizardData.bid.timeline}</span>
+        </div>
+        <div class="review-item">
+            <span class="review-label">Proposal:</span>
+            <span class="review-value">${wizardData.bid.proposal_text.substring(0, 100)}...</span>
+        </div>
+    `;
+    
+    document.getElementById('review-documents').innerHTML = `
+        <div class="review-item">
+            <span class="review-label">Documents:</span>
+            <span class="review-value">${proposalFiles.length} files uploaded</span>
+        </div>
+        ${proposalFiles.map(file => `
+            <div class="review-item">
+                <span class="review-label">${getFileIcon(file.type)}</span>
+                <span class="review-value">${file.name}</span>
+            </div>
+        `).join('')}
+    `;
+}
+
+async function submitBid() {
+    const submitBtn = document.getElementById('submit-bid-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoading = document.getElementById('submit-loading');
+    
+    // Show loading state
+    submitText.classList.add('hidden');
+    submitLoading.classList.remove('hidden');
+    submitBtn.disabled = true;
+    
+    try {
+        // Validate and sanitize mobile number
+        const phoneInput = document.getElementById('phone-number');
+        let sanitizedMobile = null;
+        if (phoneInput && phoneInput.value.trim()) {
+            sanitizedMobile = actms.sanitizeIndianMobile(phoneInput.value);
+            if (!sanitizedMobile) {
+                actms.showToast('Invalid mobile number format. Please use Indian format.', 'error');
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+                submitBtn.disabled = false;
+                return;
+            }
+        }
+        
+        // Prepare bid data for API
+        const companyInfo = { ...wizardData.company };
+        if (sanitizedMobile) {
+            companyInfo.mobile = sanitizedMobile;
+        }
+        
+        const bidData = {
+            tender_id: wizardData.tender.id,
+            company_name: wizardData.company.name,
+            bid_amount: parseFloat(wizardData.bid.amount),
+            proposal_text: wizardData.bid.proposal_text,
+            company_info: companyInfo,
+            contact_email: wizardData.company.email
+        };
+        
+        const result = await actms.submitBid(bidData);
+        
+        // Show success modal
+        showSuccessModal(result);
+        
+    } catch (error) {
+        console.error('Failed to submit bid:', error);
+        actms.showToast('Failed to submit bid. Please try again.', 'error');
+        
+        // Reset button state
+        submitText.classList.remove('hidden');
+        submitLoading.classList.add('hidden');
+        submitBtn.disabled = false;
+    }
+}
+
+function showSuccessModal(result) {
+    const modal = document.getElementById('success-modal');
+    
+    // Update submission details
+    document.getElementById('submission-id').textContent = `#BID-${result.bid_id || '2025-0001'}`;
+    document.getElementById('submission-time').textContent = new Date().toLocaleString();
+    
+    modal.style.display = 'flex';
+}
+
+function closeSuccessModal() {
+    document.getElementById('success-modal').style.display = 'none';
+    
+    // Reset wizard
+    resetWizard();
+}
+
+function submitAnotherBid() {
+    closeSuccessModal();
+    resetWizard();
+}
+
+function resetWizard() {
+    currentStep = 1;
+    selectedTender = null;
+    proposalFiles = [];
+    wizardData = { tender: {}, company: {}, bid: {}, documents: [] };
+    
+    // Clear forms
+    document.getElementById('company-form').reset();
+    document.getElementById('bid-form').reset();
+    document.getElementById('terms-agreement').checked = false;
+    document.getElementById('digital-signature').value = '';
+    
+    // Clear file uploads
+    document.getElementById('uploaded-documents').innerHTML = '';
+    
+    // Reset UI
+    updateWizardDisplay();
+    renderAvailableTenders();
+    
+    // Disable next button
+    document.getElementById('step1-next').disabled = true;
+}
+
+// Mobile number validation functions
+function validateMobileNumber() {
+    const phoneInput = document.getElementById('phone-number');
+    if (!phoneInput || !phoneInput.value.trim()) return true;
+    
+    const isValid = actms.validateIndianMobile(phoneInput.value);
+    if (!isValid) {
+        actms.showFieldError(phoneInput, 'Please enter a valid Indian mobile number (e.g., +91-98765-43210)');
+        return false;
+    } else {
+        actms.clearFieldError(phoneInput);
+        return true;
+    }
+}
+
+function formatMobileOnInput() {
+    const phoneInput = document.getElementById('phone-number');
+    if (!phoneInput || !phoneInput.value) return;
+    
+    // Only format if the value looks like it could be valid
+    const cleaned = phoneInput.value.replace(/\D/g, '');
+    if (cleaned.length >= 10) {
+        const formatted = actms.formatIndianMobile(phoneInput.value);
+        if (formatted !== phoneInput.value) {
+            phoneInput.value = formatted;
+        }
+    }
+}
+</script>
+{% endblock %}

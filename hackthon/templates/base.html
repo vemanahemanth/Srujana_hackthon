@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ACTMS - Anti-Corruption Tender Management System{% endblock %}</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="Transparent Tenders. AI-Powered Integrity. Advanced tender management system with fraud detection.">
+    <meta name="keywords" content="tender management, anti-corruption, AI, fraud detection, government">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/styles/global.css">
+    {% block styles %}{% endblock %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/static/icons/favicon.svg">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav-glass">
+        <div class="nav-content">
+            <a href="/" class="nav-logo">
+                {% from 'partials/icons.html' import icon %}
+                {{ icon('shield', 'md', 'glass') }} ACTMS
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="/" class="nav-link {% block nav_home %}{% endblock %}">Home</a></li>
+                <li><a href="/dashboard" class="nav-link {% block nav_dashboard %}{% endblock %}">Dashboard</a></li>
+                <li><a href="/tenders" class="nav-link {% block nav_tenders %}{% endblock %}">Tenders</a></li>
+                <li><a href="/bids" class="nav-link {% block nav_bids %}{% endblock %}">Bids</a></li>
+                <li><a href="/ai-analysis" class="nav-link {% block nav_ai %}{% endblock %}">AI Analysis</a></li>
+                <li><a href="/chat" class="nav-link {% block nav_chat %}{% endblock %}">Chat</a></li>
+            </ul>
+            
+            <!-- Mobile Menu Toggle (for future mobile implementation) -->
+            <button class="mobile-nav-toggle" style="display: none;">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="page-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating Chat Button -->
+    <div id="floating-chat" class="floating-chat">
+        <button class="chat-toggle glass" onclick="toggleFloatingChat()">
+            {% from 'partials/icons.html' import icon %}
+            {{ icon('chat', 'md', 'glass') }}
+            <span class="chat-pulse"></span>
+        </button>
+        
+        <div class="chat-panel glass" id="chat-panel" style="display: none;">
+            <div class="chat-header">
+                <h4>ACTMS Assistant</h4>
+                <button class="chat-close" onclick="toggleFloatingChat()">{{ icon('close', 'sm', 'glass') }}</button>
+            </div>
+            <div class="chat-messages" id="floating-chat-messages">
+                <div class="chat-message ai-message">
+                    <div class="message-content">
+                        <p>Hello! I'm your ACTMS assistant. How can I help you today?</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" class="chat-input" placeholder="Type your message..." id="floating-chat-input">
+                <button class="chat-send" onclick="sendFloatingChatMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/js/global.js"></script>
+    {% block scripts %}{% endblock %}
+    
+    <!-- Floating Chat Styles -->
+    <style>
+        .floating-chat {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .chat-toggle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all var(--transition-base);
+        }
+        
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .chat-icon {
+            font-size: 1.5rem;
+            color: var(--color-text-primary);
+        }
+        
+        .chat-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+        
+        .chat-panel {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--glass-radius);
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            padding: var(--spacing-md);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h4 {
+            color: var(--color-text-primary);
+            margin: 0;
+        }
+        
+        .chat-close {
+            background: none;
+            border: none;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            padding: var(--spacing-xs);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: var(--spacing-md);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+        
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+        
+        .chat-message.user-message {
+            justify-content: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--spacing-md);
+        }
+        
+        .ai-message .message-content {
+            background: var(--glass-hover);
+            border: 1px solid var(--glass-border);
+        }
+        
+        .user-message .message-content {
+            background: var(--color-text-primary);
+            color: var(--color-bg-start);
+        }
+        
+        .chat-input-area {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--spacing-sm);
+            background: var(--glass-fill);
+            color: var(--color-text-primary);
+        }
+        
+        .chat-send {
+            padding: var(--spacing-sm) var(--spacing-md);
+            background: var(--color-text-primary);
+            color: var(--color-bg-start);
+            border: none;
+            border-radius: var(--spacing-sm);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .chat-panel {
+                width: 300px;
+                height: 400px;
+            }
+            
+            .floating-chat {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+    </style>
+
+    <!-- Floating Chat JavaScript -->
+    <script>
+        function toggleFloatingChat() {
+            const panel = document.getElementById('chat-panel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                document.getElementById('floating-chat-input').focus();
+            }
+        }
+        
+        function sendFloatingChatMessage() {
+            const input = document.getElementById('floating-chat-input');
+            const messagesContainer = document.getElementById('floating-chat-messages');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chat-message user-message';
+            userMessage.innerHTML = `
+                <div class="message-content">
+                    <p>${message}</p>
+                </div>
+            `;
+            messagesContainer.appendChild(userMessage);
+            
+            // Clear input
+            input.value = '';
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Send to API
+            actms.chatWithBot(message).then(response => {
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'chat-message ai-message';
+                aiMessage.innerHTML = `
+                    <div class="message-content">
+                        <p>${response.message}</p>
+                    </div>
+                `;
+                messagesContainer.appendChild(aiMessage);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }).catch(error => {
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'chat-message ai-message';
+                errorMessage.innerHTML = `
+                    <div class="message-content">
+                        <p>Sorry, I'm having trouble responding right now. Please try again later.</p>
+                    </div>
+                `;
+                messagesContainer.appendChild(errorMessage);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+        }
+        
+        // Send message on Enter key
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatInput = document.getElementById('floating-chat-input');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendFloatingChatMessage();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

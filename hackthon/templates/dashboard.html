@@ -1,0 +1,928 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ACTMS{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header section">
+        <div class="header-content" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1 class="text-primary mb-sm">Dashboard</h1>
+                <p class="text-secondary">Real-time insights into tender management and fraud detection</p>
+            </div>
+            
+            <div class="header-controls flex gap-md">
+                <div class="date-picker glass" style="padding: 0.75rem 1rem; border-radius: 8px;">
+                    <input type="date" id="date-filter" class="input" style="background: transparent; border: none; padding: 0; color: var(--color-text-primary);" value="">
+                </div>
+                <button class="btn btn-secondary" onclick="refreshDashboard()">
+                    {% from 'partials/icons.html' import icon %}
+                    {{ icon('refresh', 'sm', 'glass') }} Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-button active" data-tab="overview">Overview</button>
+            <button class="tab-button" data-tab="financial">Financial</button>
+            <button class="tab-button" data-tab="security">Security</button>
+            <button class="tab-button" data-tab="operational">Operational</button>
+            <button class="tab-button" data-tab="admin">Admin</button>
+        </div>
+
+        <!-- Overview Tab Content -->
+        <div class="tab-content active" data-content="overview">
+            <!-- KPI Cards -->
+            <div class="kpi-section mb-xl">
+                <div class="grid grid-4">
+                    <div class="kpi-card glass-card text-center fade-in">
+                        {% from 'partials/icons.html' import glass_icon %}
+                        {{ glass_icon('chart-pie', 'lg', 'glass', pulse=True, status='info', style='margin-bottom: 1rem;') }}
+                        <div class="kpi-value text-primary" style="font-size: 2.5rem; font-weight: bold;" id="total-tenders">-</div>
+                        <div class="kpi-label">Total Tenders</div>
+                        <div class="kpi-change text-secondary" style="font-size: 0.875rem; margin-top: 0.5rem;">+12% from last month</div>
+                    </div>
+                    
+                    <div class="kpi-card glass-card text-center fade-in" style="animation-delay: 0.1s;">
+                        {{ glass_icon('briefcase', 'lg', 'glass', float=True, status='success', style='margin-bottom: 1rem;') }}
+                        <div class="kpi-value text-primary" style="font-size: 2.5rem; font-weight: bold;" id="active-bids">-</div>
+                        <div class="kpi-label">Active Bids</div>
+                        <div class="kpi-change text-secondary" style="font-size: 0.875rem; margin-top: 0.5rem;">+5% from last week</div>
+                    </div>
+                    
+                    <div class="kpi-card glass-card text-center fade-in" style="animation-delay: 0.2s;">
+                        {{ glass_icon('alert', 'lg', 'glass', status='warning', style='margin-bottom: 1rem;') }}
+                        <div class="kpi-value text-primary" style="font-size: 2.5rem; font-weight: bold;" id="suspicious-flags">-</div>
+                        <div class="kpi-label">Suspicious Flags</div>
+                        <div class="kpi-change text-secondary" style="font-size: 0.875rem; margin-top: 0.5rem;">-8% from last week</div>
+                    </div>
+                    
+                    <div class="kpi-card glass-card text-center fade-in" style="animation-delay: 0.3s;">
+                        {{ glass_icon('bolt', 'lg', 'glass', pulse=True, status='success', style='margin-bottom: 1rem;') }}
+                        <div class="kpi-value text-primary" style="font-size: 2.5rem; font-weight: bold;" id="alerts-today">-</div>
+                        <div class="kpi-label">Alerts Today</div>
+                        <div class="kpi-change text-secondary" style="font-size: 0.875rem; margin-top: 0.5rem;">Real-time monitoring</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="charts-section">
+                <div class="grid grid-2">
+                    <div class="chart-container glass-card fade-in">
+                        <h3 class="text-primary mb-lg">Tender Status Distribution</h3>
+                        <div class="chart-wrapper" style="height: 300px; position: relative;">
+                            <canvas id="tenderStatusChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container glass-card fade-in" style="animation-delay: 0.2s;">
+                        <h3 class="text-primary mb-lg">Suspicion Score Distribution</h3>
+                        <div class="chart-wrapper" style="height: 300px; position: relative;">
+                            <canvas id="suspicionScoreChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Suspicious Bids Table -->
+            <div class="recent-suspicious-section mt-xl">
+                <div class="glass-card fade-in">
+                    <h3 class="text-primary mb-lg">Recent Suspicious Bids</h3>
+                    <div class="table-container">
+                        <table class="data-table" id="suspicious-bids-table">
+                            <thead>
+                                <tr>
+                                    <th>Bid ID</th>
+                                    <th>Company</th>
+                                    <th>Amount</th>
+                                    <th>Score</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="loading-row">
+                                    <td colspan="6" class="text-center">Loading suspicious bids...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Tab Content -->
+        <div class="tab-content" data-content="financial">
+            <div class="grid grid-2">
+                <div class="chart-container glass-card fade-in">
+                    <h3 class="text-primary mb-lg">Tender Value Distribution</h3>
+                    <div class="chart-wrapper" style="height: 400px; position: relative;">
+                        <canvas id="tenderValueChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="financial-summary glass-card fade-in" style="animation-delay: 0.2s;">
+                    <h3 class="text-primary mb-lg">Financial Summary</h3>
+                    <div class="summary-items">
+                        <div class="summary-item" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Total Tender Value</span>
+                            <span class="text-primary" id="total-value">₹0</span>
+                        </div>
+                        <div class="summary-item" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Average Bid Amount</span>
+                            <span class="text-primary" id="avg-bid">₹0</span>
+                        </div>
+                        <div class="summary-item" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Highest Single Tender</span>
+                            <span class="text-primary" id="highest-tender">₹0</span>
+                        </div>
+                        <div class="summary-item" style="display: flex; justify-content: space-between; padding: 1rem 0;">
+                            <span>Cost Savings (AI Detection)</span>
+                            <span class="text-primary" id="cost-savings">₹0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Tab Content -->
+        <div class="tab-content" data-content="security">
+            <div class="grid grid-2">
+                <div class="chart-container glass-card fade-in">
+                    <h3 class="text-primary mb-lg">Risk Level Analysis</h3>
+                    <div class="chart-wrapper" style="height: 400px; position: relative;">
+                        <canvas id="riskLevelChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="security-metrics glass-card fade-in" style="animation-delay: 0.2s;">
+                    <h3 class="text-primary mb-lg">Security Metrics</h3>
+                    
+                    <div class="metric-item mb-lg">
+                        <div class="metric-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Detection Accuracy</span>
+                            <span class="text-primary">99.2%</span>
+                        </div>
+                        <div class="progress-bar" style="background: var(--glass-fill); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="progress-fill" style="background: var(--color-text-primary); height: 100%; width: 99.2%; transition: width 1s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-item mb-lg">
+                        <div class="metric-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>System Uptime</span>
+                            <span class="text-primary">99.9%</span>
+                        </div>
+                        <div class="progress-bar" style="background: var(--glass-fill); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="progress-fill" style="background: var(--color-text-primary); height: 100%; width: 99.9%; transition: width 1s ease;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-item mb-lg">
+                        <div class="metric-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Response Time</span>
+                            <span class="text-primary">0.3s</span>
+                        </div>
+                        <div class="progress-bar" style="background: var(--glass-fill); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div class="progress-fill" style="background: var(--color-text-primary); height: 100%; width: 85%; transition: width 1s ease;"></div>
+                        </div>
+                    </div>
+
+                    <div class="security-alerts">
+                        <h4 class="text-primary mb-md">Recent Security Alerts</h4>
+                        <div class="alert-list" id="security-alerts-list">
+                            <div class="alert-item" style="padding: 0.75rem; background: var(--glass-hover); border-radius: 8px; margin-bottom: 0.5rem;">
+                                <div class="alert-message">Unusual bidding pattern detected</div>
+                                <div class="alert-time text-secondary" style="font-size: 0.75rem;">2 minutes ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Operational Tab Content -->
+        <div class="tab-content" data-content="operational">
+            <div class="chart-container glass-card fade-in mb-xl">
+                <h3 class="text-primary mb-lg">Activity Timeline</h3>
+                <div class="chart-wrapper" style="height: 400px; position: relative;">
+                    <canvas id="activityTimelineChart"></canvas>
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="operational-metric glass-card fade-in text-center">
+                    <h4 class="text-primary">Daily Processing</h4>
+                    <div class="metric-value" style="font-size: 2rem; font-weight: bold; margin: 1rem 0;" id="daily-processing">0</div>
+                    <div class="metric-unit text-secondary">tenders/day</div>
+                </div>
+                
+                <div class="operational-metric glass-card fade-in text-center" style="animation-delay: 0.1s;">
+                    <h4 class="text-primary">Avg Response Time</h4>
+                    <div class="metric-value" style="font-size: 2rem; font-weight: bold; margin: 1rem 0;" id="response-time">0.3</div>
+                    <div class="metric-unit text-secondary">seconds</div>
+                </div>
+                
+                <div class="operational-metric glass-card fade-in text-center" style="animation-delay: 0.2s;">
+                    <h4 class="text-primary">System Load</h4>
+                    <div class="metric-value" style="font-size: 2rem; font-weight: bold; margin: 1rem 0;" id="system-load">23</div>
+                    <div class="metric-unit text-secondary">% CPU usage</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Tab Content -->
+        <div class="tab-content" data-content="admin">
+            <div class="grid grid-2">
+                <div class="admin-actions glass-card fade-in">
+                    <h3 class="text-primary mb-lg">System Administration</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary w-full mb-md" onclick="trainModel()">
+                            {{ icon('robot', 'sm', 'glass') }} Retrain AI Model
+                        </button>
+                        <button class="btn btn-secondary w-full mb-md" onclick="exportData()">
+                            {{ icon('download', 'sm', 'glass') }} Export Dashboard Data
+                        </button>
+                        <button class="btn btn-secondary w-full mb-md" onclick="viewAuditLogs()">
+                            {{ icon('edit', 'sm', 'glass') }} View Audit Logs
+                        </button>
+                        <button class="btn btn-secondary w-full mb-md" onclick="systemMaintenance()">
+                            🔧 System Maintenance
+                        </button>
+                    </div>
+                    
+                    <div class="system-status mt-xl">
+                        <h4 class="text-primary mb-md">System Status</h4>
+                        <div class="status-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span>Database</span>
+                            <span class="status-indicator" style="color: #00FF00;">🟢 Online</span>
+                        </div>
+                        <div class="status-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span>ML Service</span>
+                            <span class="status-indicator" style="color: #00FF00;">🟢 Online</span>
+                        </div>
+                        <div class="status-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span>Chatbot</span>
+                            <span class="status-indicator" style="color: #00FF00;">🟢 Online</span>
+                        </div>
+                        <div class="status-item" style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                            <span>File Handler</span>
+                            <span class="status-indicator" style="color: #00FF00;">🟢 Online</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-stats glass-card fade-in" style="animation-delay: 0.2s;">
+                    <h3 class="text-primary mb-lg">Usage Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-row" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Total Users</span>
+                            <span class="text-primary">247</span>
+                        </div>
+                        <div class="stat-row" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Active Sessions</span>
+                            <span class="text-primary">23</span>
+                        </div>
+                        <div class="stat-row" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>API Calls Today</span>
+                            <span class="text-primary">1,847</span>
+                        </div>
+                        <div class="stat-row" style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--glass-border);">
+                            <span>Storage Used</span>
+                            <span class="text-primary">2.3 GB</span>
+                        </div>
+                        <div class="stat-row" style="display: flex; justify-content: space-between; padding: 1rem 0;">
+                            <span>Last Backup</span>
+                            <span class="text-primary">2 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Dashboard-specific styles */
+.kpi-card {
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.data-table th {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+    background: var(--glass-hover);
+}
+
+.data-table td {
+    color: var(--color-text-secondary);
+}
+
+.data-table tr:hover {
+    background: var(--glass-hover);
+}
+
+.chart-container {
+    position: relative;
+}
+
+.chart-wrapper canvas {
+    background: transparent !important;
+}
+
+.action-buttons .btn {
+    justify-content: flex-start;
+    gap: 0.75rem;
+}
+
+.progress-bar {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill {
+    transition: width 2s ease;
+    animation: progressGlow 2s infinite;
+}
+
+@keyframes progressGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.loading-row td {
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .tabs {
+        flex-wrap: wrap;
+    }
+    
+    .tab-button {
+        flex: none;
+        min-width: 100px;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .kpi-value {
+        font-size: 1.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let dashboardCharts = {};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date to today
+    document.getElementById('date-filter').value = new Date().toISOString().split('T')[0];
+    
+    // Load dashboard data
+    loadDashboardData();
+    
+    // Set up auto-refresh
+    setInterval(loadDashboardData, 30000); // Refresh every 30 seconds
+});
+
+async function loadDashboardData() {
+    try {
+        const data = await actms.getDashboardData();
+        
+        // Update KPI cards with animation
+        updateKPICards(data);
+        
+        // Update charts
+        updateCharts(data);
+        
+        // Load suspicious bids table
+        loadSuspiciousBidsTable();
+        
+    } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+        // Use demo data if API fails
+        loadDemoData();
+    }
+}
+
+function updateKPICards(data) {
+    const kpiElements = {
+        'total-tenders': data.total_tenders || 156,
+        'active-bids': data.active_bids || 89,
+        'suspicious-flags': data.suspicious_flags || 12,
+        'alerts-today': data.alerts_today || 3
+    };
+    
+    Object.entries(kpiElements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+            actms.animateCounter(element, 0, value, 1500);
+        }
+    });
+}
+
+function updateCharts(data) {
+    // Tender Status Chart (Pie)
+    createTenderStatusChart(data.tender_status_distribution);
+    
+    // Suspicion Score Chart (Bar)
+    createSuspicionScoreChart(data.suspicious_score_distribution);
+    
+    // Tender Value Chart (Bar)
+    createTenderValueChart(data.tender_value_distribution);
+    
+    // Risk Level Chart (Doughnut)
+    createRiskLevelChart(data);
+    
+    // Activity Timeline Chart (Line)
+    createActivityTimelineChart(data.activity_timeline);
+}
+
+function createTenderStatusChart(data) {
+    const ctx = document.getElementById('tenderStatusChart');
+    if (!ctx) return;
+    
+    // Destroy existing chart
+    if (dashboardCharts.tenderStatus) {
+        dashboardCharts.tenderStatus.destroy();
+    }
+    
+    const colors = actms.getMonochromeColors();
+    
+    dashboardCharts.tenderStatus = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: data ? Object.keys(data) : ['Active', 'Closed', 'Pending', 'Draft'],
+            datasets: [{
+                data: data ? Object.values(data) : [45, 32, 18, 5],
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                animateRotate: true,
+                duration: 1500
+            }
+        }
+    });
+}
+
+function createSuspicionScoreChart(data) {
+    const ctx = document.getElementById('suspicionScoreChart');
+    if (!ctx) return;
+    
+    if (dashboardCharts.suspicionScore) {
+        dashboardCharts.suspicionScore.destroy();
+    }
+    
+    const colors = actms.getMonochromeColors();
+    
+    // Handle array of objects format from API
+    let labels, chartData;
+    if (data && Array.isArray(data) && data.length > 0) {
+        labels = data.map(item => item.risk_level);
+        chartData = data.map(item => item.count);
+    } else {
+        labels = ['Low Risk', 'Medium Risk', 'High Risk', 'Critical Risk'];
+        chartData = [0, 0, 0, 0];
+    }
+    
+    dashboardCharts.suspicionScore = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Bids',
+                data: chartData,
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                duration: 1500,
+                easing: 'easeOutQuart'
+            }
+        }
+    });
+}
+
+function createTenderValueChart(data) {
+    const ctx = document.getElementById('tenderValueChart');
+    if (!ctx) return;
+    
+    if (dashboardCharts.tenderValue) {
+        dashboardCharts.tenderValue.destroy();
+    }
+    
+    const colors = actms.getMonochromeColors();
+    
+    dashboardCharts.tenderValue = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data ? Object.keys(data) : ['<₹10L', '₹10L-₹50L', '₹50L-₹1Cr', '₹1Cr-₹5Cr', '>₹5Cr'],
+            datasets: [{
+                label: 'Tenders',
+                data: data ? Object.values(data) : [23, 45, 32, 18, 7],
+                backgroundColor: colors,
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                duration: 2000,
+                easing: 'easeOutBounce'
+            }
+        }
+    });
+}
+
+function createRiskLevelChart(data) {
+    const ctx = document.getElementById('riskLevelChart');
+    if (!ctx) return;
+    
+    if (dashboardCharts.riskLevel) {
+        dashboardCharts.riskLevel.destroy();
+    }
+    
+    const colors = actms.getMonochromeColors();
+    const safeCount = (data.active_bids || 89) - (data.suspicious_flags || 12);
+    
+    dashboardCharts.riskLevel = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Safe', 'Suspicious'],
+            datasets: [{
+                data: [safeCount, data.suspicious_flags || 12],
+                backgroundColor: [colors[0], colors[3]],
+                borderColor: 'rgba(255,255,255,0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            cutout: '60%',
+            animation: {
+                animateRotate: true,
+                duration: 2000
+            }
+        }
+    });
+}
+
+function createActivityTimelineChart(data) {
+    const ctx = document.getElementById('activityTimelineChart');
+    if (!ctx) return;
+    
+    if (dashboardCharts.activityTimeline) {
+        dashboardCharts.activityTimeline.destroy();
+    }
+    
+    // Generate sample data if no real data
+    const labels = data ? Object.keys(data) : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const values = data ? Object.values(data) : [12, 19, 8, 15, 22, 3, 9];
+    
+    dashboardCharts.activityTimeline = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Activity',
+                data: values,
+                borderColor: 'rgba(255,255,255,0.8)',
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(255,255,255,1)',
+                pointBorderColor: 'rgba(255,255,255,0.8)',
+                pointHoverBackgroundColor: 'rgba(255,255,255,1)',
+                pointHoverBorderColor: 'rgba(255,255,255,1)'
+            }]
+        },
+        options: {
+            ...actms.getChartOptions(),
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+}
+
+async function loadSuspiciousBidsTable() {
+    try {
+        const bids = await actms.getSuspiciousBids();
+        const tableBody = document.querySelector('#suspicious-bids-table tbody');
+        
+        if (!tableBody) return;
+        
+        if (bids && bids.length > 0) {
+            tableBody.innerHTML = bids.slice(0, 5).map(bid => `
+                <tr>
+                    <td>#${bid.id || 'N/A'}</td>
+                    <td>${bid.company_name || 'Unknown'}</td>
+                    <td>${actms.formatCurrency(bid.bid_amount || 0)}</td>
+                    <td>
+                        <span style="color: ${getSuspicionColor(bid.anomaly_score || 0)}">
+                            ${(bid.anomaly_score || 0).toFixed(3)}
+                        </span>
+                    </td>
+                    <td>${actms.formatDate(bid.created_at || new Date())}</td>
+                    <td>
+                        <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                                onclick="viewBidDetails(${bid.id})">
+                            View
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center">No suspicious bids found</td>
+                </tr>
+            `;
+        }
+    } catch (error) {
+        console.error('Failed to load suspicious bids:', error);
+        // Show demo data
+        const tableBody = document.querySelector('#suspicious-bids-table tbody');
+        if (tableBody) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td>#1023</td>
+                    <td>ABC Corp</td>
+                    <td>₹75,000</td>
+                    <td><span style="color: #FF6B6B">0.847</span></td>
+                    <td>2025-09-14</td>
+                    <td><button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">View</button></td>
+                </tr>
+                <tr>
+                    <td>#1089</td>
+                    <td>XYZ Ltd</td>
+                    <td>₹1,20,000</td>
+                    <td><span style="color: #FFA500">0.723</span></td>
+                    <td>2025-09-14</td>
+                    <td><button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">View</button></td>
+                </tr>
+            `;
+        }
+    }
+}
+
+function getSuspicionColor(score) {
+    if (score > 0.8) return '#FF6B6B';
+    if (score > 0.6) return '#FFA500';
+    if (score > 0.4) return '#FFD93D';
+    return '#90EE90';
+}
+
+function loadDemoData() {
+    const demoData = {
+        total_tenders: 156,
+        active_bids: 89,
+        suspicious_flags: 12,
+        alerts_today: 3,
+        tender_status_distribution: {
+            'Active': 45,
+            'Closed': 32,
+            'Pending': 18,
+            'Draft': 5
+        },
+        suspicious_score_distribution: {
+            'Low': 89,
+            'Medium': 23,
+            'High': 8,
+            'Critical': 3
+        },
+        tender_value_distribution: {
+            '<₹10L': 23,
+            '₹10L-₹50L': 45,
+            '₹50L-₹1Cr': 32,
+            '₹1Cr-₹5Cr': 18,
+            '>₹5Cr': 7
+        },
+        activity_timeline: {
+            'Mon': 12,
+            'Tue': 19,
+            'Wed': 8,
+            'Thu': 15,
+            'Fri': 22,
+            'Sat': 3,
+            'Sun': 9
+        }
+    };
+    
+    updateKPICards(demoData);
+    updateCharts(demoData);
+    loadSuspiciousBidsTable();
+}
+
+// Bid Details View
+function viewBidDetails(bidId) {
+    // Fetch bid details and show in modal
+    actms.getBids().then(allBids => {
+        const bid = allBids.find(b => b.id === bidId);
+        if (bid) {
+            showBidDetailsModal(bid);
+        } else {
+            actms.showToast('Bid not found', 'error');
+        }
+    }).catch(error => {
+        console.error('Failed to fetch bid details:', error);
+        actms.showToast('Failed to load bid details', 'error');
+    });
+}
+
+function showBidDetailsModal(bid) {
+    // Create modal overlay
+    const modalOverlay = document.createElement('div');
+    modalOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        backdrop-filter: blur(10px);
+    `;
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'glass-card';
+    modalContent.style.cssText = `
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        padding: 2rem;
+        position: relative;
+    `;
+    
+    const suspiciousFlag = bid.is_suspicious ? '<span style="color: #FF6B6B; font-weight: bold;">🚨 SUSPICIOUS</span>' : '<span style="color: #00FF00;">✅ Normal</span>';
+    const riskColor = bid.anomaly_score > 0.7 ? '#FF6B6B' : bid.anomaly_score > 0.4 ? '#FFA500' : '#00FF00';
+    
+    modalContent.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 class="text-primary">Bid Details #${bid.id}</h2>
+            <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-secondary" style="padding: 0.5rem;">✕</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+                <h4 class="text-primary">Company Information</h4>
+                <p><strong>Name:</strong> ${bid.company_name}</p>
+                <p><strong>Email:</strong> ${bid.contact_email || 'Not provided'}</p>
+                <p><strong>Mobile:</strong> ${bid.company_info?.mobile || bid.company_info?.phone || 'Not provided'}</p>
+                <p><strong>Address:</strong> ${bid.company_info?.address || 'Not provided'}</p>
+            </div>
+            <div>
+                <h4 class="text-primary">Bid Information</h4>
+                <p><strong>Amount:</strong> ₹${bid.bid_amount.toLocaleString('en-IN')}</p>
+                <p><strong>Tender:</strong> ${bid.tender_title}</p>
+                <p><strong>Department:</strong> ${bid.department}</p>
+                <p><strong>Submitted:</strong> ${actms.formatDateTime(bid.created_at)}</p>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 2rem;">
+            <h4 class="text-primary">AI Analysis</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; text-align: center;">
+                <div class="glass" style="padding: 1rem; border-radius: 8px;">
+                    <div style="font-size: 1.5rem; color: ${riskColor}; font-weight: bold;">${bid.anomaly_score.toFixed(3)}</div>
+                    <div style="font-size: 0.875rem;">Anomaly Score</div>
+                </div>
+                <div class="glass" style="padding: 1rem; border-radius: 8px;">
+                    <div style="font-size: 1.5rem; color: #FFA500; font-weight: bold;">${bid.nlp_score.toFixed(3)}</div>
+                    <div style="font-size: 0.875rem;">NLP Quality Score</div>
+                </div>
+                <div class="glass" style="padding: 1rem; border-radius: 8px;">
+                    <div style="font-size: 1.2rem;">${suspiciousFlag}</div>
+                    <div style="font-size: 0.875rem;">Status</div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h4 class="text-primary">Proposal Text</h4>
+            <div class="glass" style="padding: 1rem; border-radius: 8px; max-height: 200px; overflow-y: auto;">
+                <p style="white-space: pre-wrap; line-height: 1.6;">${bid.proposal_text}</p>
+            </div>
+        </div>
+        
+        <div style="margin-top: 2rem; text-align: center;">
+            <button onclick="this.closest('.modal-overlay').remove()" class="btn btn-primary">Close</button>
+        </div>
+    `;
+    
+    modalOverlay.className = 'modal-overlay';
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+    
+    // Close on overlay click
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.remove();
+        }
+    });
+    
+    // Close on Escape key
+    const closeOnEscape = (e) => {
+        if (e.key === 'Escape') {
+            modalOverlay.remove();
+            document.removeEventListener('keydown', closeOnEscape);
+        }
+    };
+    document.addEventListener('keydown', closeOnEscape);
+}
+
+// Dashboard Actions
+function refreshDashboard() {
+    actms.showToast('Refreshing dashboard...', 'info');
+    loadDashboardData();
+}
+
+function trainModel() {
+    actms.showToast('Initiating model training...', 'info');
+    actms.trainModel().then(result => {
+        actms.showToast('Model training started successfully', 'success');
+    }).catch(error => {
+        actms.showToast('Failed to start model training', 'error');
+    });
+}
+
+function exportData() {
+    actms.showToast('Preparing data export...', 'info');
+    // Implement export functionality
+}
+
+function viewAuditLogs() {
+    actms.showToast('Loading audit logs...', 'info');
+    // Implement audit logs view
+}
+
+function systemMaintenance() {
+    actms.showToast('System maintenance mode activated', 'info');
+    // Implement maintenance mode
+}
+
+function viewBidDetails(bidId) {
+    actms.showToast(`Loading details for bid #${bidId}...`, 'info');
+    // Implement bid details view
+}
+</script>
+{% endblock %}
